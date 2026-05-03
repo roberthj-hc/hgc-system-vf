@@ -1,3 +1,6 @@
+"use client"
+
+import { useEffect, useRef, useState } from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -10,15 +13,55 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+
+  const router = useRouter()
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(null)
+  const [enabled, setEnabled] = useState(false)
+  const imageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const isFinePointer = window.matchMedia("(pointer: fine)").matches
+    setEnabled(isFinePointer)
+
+    if (!isFinePointer) return
+
+    setPosition({
+      x: window.innerWidth / 2,
+      y: window.innerHeight / 2,
+    })
+
+    const handleMouseMove = (e: MouseEvent) => {
+      setPosition({ x: e.clientX, y: e.clientY })
+    }
+
+    window.addEventListener("mousemove", handleMouseMove)
+    return () => window.removeEventListener("mousemove", handleMouseMove)
+  }, [])
+
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="overflow-hidden p-0">
-        <CardContent className="grid p-0 md:grid-cols-2">
+    <div
+      className={cn("relative flex flex-col gap-6 isolate", className)}
+      {...props}
+    >
+
+      {enabled && position && (
+        <div
+          className="pointer-events-none fixed inset-0 z-0"
+          style={{
+            background: `radial-gradient(350px at ${position.x}px ${position.y}px, rgba(255, 200, 0, 0.15), transparent 60%)`,
+          }}
+        />
+      )}
+
+      <Card className="relative z-10 overflow-hidden p-0 bg-background">
+        <CardContent className="grid p-0 md:grid-cols-2 bg-background">
+
           <form className="p-6 md:p-8">
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
@@ -27,6 +70,7 @@ export function LoginForm({
                   Inicia sesión en tu cuenta de HGC
                 </p>
               </div>
+
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input
@@ -36,6 +80,7 @@ export function LoginForm({
                   required
                 />
               </Field>
+
               <Field>
                 <div className="flex items-center">
                   <FieldLabel htmlFor="password">Contraseña</FieldLabel>
@@ -48,12 +93,17 @@ export function LoginForm({
                 </div>
                 <Input id="password" type="password" required />
               </Field>
+
               <Field>
-                <Button type="submit" className="bg-white hover:text-yellow-500" variant="outline">Iniciar sesión</Button>
+                <Button type="submit" size="lg" className="w-full" onClick={() => router.push("/system")}>
+                  Iniciar sesión
+                </Button>
               </Field>
+
               <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
                 O continúa con
               </FieldSeparator>
+
               <Field className="grid grid-cols-3 gap-4">
                 <Button variant="outline" type="button">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -83,28 +133,50 @@ export function LoginForm({
                   <span className="sr-only">Iniciar sesión con Meta</span>
                 </Button>
               </Field>
+
               <FieldDescription className="text-center">
                 ¿No tienes una cuenta?{" "}
                 <Link href="/auth/signup" className="underline">
-                    Regístrate
+                  Regístrate
                 </Link>
               </FieldDescription>
             </FieldGroup>
           </form>
-          <div className="relative hidden bg-muted md:block">
-            <img
-              src="/placeholder.svg"
-              alt="Image"
-              className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
-            />
+
+          <div
+            ref={imageRef}
+            className="relative hidden md:block overflow-hidden bg-muted"
+          >
+            <Link href={"/"}>
+              <img
+                src="/hgc.png"
+                alt="Image"
+                className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+              />
+              {enabled && position && (
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    backgroundImage: `url('/hgc.png')`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    maskImage: `radial-gradient(300px at ${position.x - (imageRef.current?.getBoundingClientRect().left || 0)}px ${position.y - (imageRef.current?.getBoundingClientRect().top || 0)}px, black 0%, transparent 70%)`,
+                    WebkitMaskImage: `radial-gradient(300px at ${position.x - (imageRef.current?.getBoundingClientRect().left || 0)}px ${position.y - (imageRef.current?.getBoundingClientRect().top || 0)}px, black 0%, transparent 70%)`,
+                  }}
+                />
+              )}
+            </Link>
           </div>
+
         </CardContent>
       </Card>
-      <FieldDescription className="px-6 text-center">
+
+      <FieldDescription className="px-6 text-center z-10 relative">
         Al continuar, aceptas nuestros{" "}
         <a href="#">Términos de servicio</a> y{" "}
         <a href="#">Política de privacidad</a>.
       </FieldDescription>
+
     </div>
   )
 }

@@ -24,6 +24,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import Image from "next/image"
 
 const data = {
   user: {
@@ -96,7 +97,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className="data-[slot=sidebar-menu-button]:h-18! "
             >
               <a href="#">
-                <IconInnerShadowTop className="size-5!" />
+                <Image
+                  src="/hgc-chicken.png"
+                  alt="HGC"
+                  width={50}
+                  height={50}
+                  className="object-contain"
+                />
                 <span className="text-base font-semibold">HGC</span>
               </a>
             </SidebarMenuButton>

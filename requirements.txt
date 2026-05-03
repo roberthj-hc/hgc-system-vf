@@ -1,0 +1,5 @@
+# Adaptador para conectar dbt con Snowflake
+dbt-snowflake
+python-dotenv
+
+# Librerías para análisis con Python

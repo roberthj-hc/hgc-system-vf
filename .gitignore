@@ -1,0 +1,136 @@
+# =========================
+# ROOT
+# =========================
+
+# ENV Files
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+*.out
+*.err
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Python ENV
+venv/
+.venv/
+**pycache**/
+*.pyc
+
+# IDEs
+.vscode/
+.idea/
+
+
+
+# =========================
+# FRONTEND
+# =========================
+
+hgc-front/node_modules
+hgc-front/.next/
+hgc-front/out/
+hgc-front/build/
+
+# Next.js env
+hgc-front/.env*.local
+
+# TypeScript
+hgc-front/*.tsbuildinfo
+hgc-front/next-env.d.ts
+
+# Yarn / PNPM
+hgc-front/.pnp
+hgc-front/.pnp.*
+hgc-front/.yarn/
+
+
+
+# =========================
+# BACKEND
+# =========================
+
+hgc-back/node_modules/
+
+# Env files (MUY IMPORTANTE en backend)
+hgc-back/.env
+hgc-back/.env.*
+!hgc-back/.env.example
+
+# Logs backend
+hgc-back/*.log
+
+# Snowflake / secrets (por si acaso)
+hgc-back/*.pem
+
+# Coverage (si usas tests)
+hgc-back/coverage/
+
+# Debug
+hgc-back/npm-debug.log*
+hgc-back/yarn-debug.log*
+hgc-back/yarn-error.log*
+
+
+
+# =========================
+# DBT
+# =========================
+
+# Compiled artifacts
+hgc-dbt/target/
+hgc-dbt/dbt_packages/
+hgc-dbt/logs/
+
+# dbt local configs
+#hgc-dbt/profiles.yml
+
+# Seeds temporales o dumps
+hgc-dbt/*.csv
+
+# MacOS artifacts dentro de dbt
+hgc-dbt/.DS_Store
+
+
+
+# =========================
+# ML
+# =========================
+
+# Modelos entrenados (pesados y generados)
+ml/models/
+ml/artifacts/
+ml/checkpoints/
+
+# Notebooks checkpoints
+ml/.ipynb_checkpoints/
+
+# Datos intermedios
+ml/data/
+ml/tmp/
+
+# Logs ML
+ml/logs/
+
+
+
+# =========================
+# MISC
+# =========================
+
+# dotenv (subcarpetas)
+**/.env
+**/.env.*
+
+# Cache
+.cache/
