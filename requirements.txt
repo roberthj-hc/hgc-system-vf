@@ -1,5 +1,8 @@
 # Adaptador para conectar dbt con Snowflake
 dbt-snowflake
 python-dotenv
+pandas
+sqlalchemy
+psycopg2-binary
 
 # Librerías para análisis con Python

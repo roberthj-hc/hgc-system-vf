@@ -30,7 +30,7 @@ const data = {
   user: {
     name: "shadcn",
     email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+    avatar: "/icon.png",
   },
   navMain: [
     {
@@ -62,8 +62,8 @@ const data = {
       title: "Asistente",
       icon: IconRobot,
       items: [
-        { title: "Chat", url: "#" },
-        { title: "Historial", url: "#" },
+        { title: "Chat", url: "/system/chatbot/chat" },
+        { title: "Historial", url: "/system/chatbot/history" },
       ],
     },
   ],
@@ -96,7 +96,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:h-18! "
             >
-              <a href="#">
+              <a href="/system">
                 <Image
                   src="/hgc-chicken.png"
                   alt="HGC"

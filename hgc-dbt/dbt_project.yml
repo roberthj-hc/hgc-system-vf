@@ -37,21 +37,17 @@ models:
       +schema: SILVER
       +materialized: view
 
-    intermediate:
-      +schema: SILVER
-      +materialized: view
-
     marts:
       +schema: GOLD
       +materialized: table
-
-    ml:
-      features:
-        +schema: features
-        +materialized: table
-      datasets:
-        +schema: training_datasets
-        +materialized: table
+      
+    intermediate:
+      +schema: FEATURES
+      +materialized: table
+    
+    features:
+      +schema: FEATURES
+      +materialized: table
 
 snapshots:
   hgc_dbt:

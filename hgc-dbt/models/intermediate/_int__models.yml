@@ -1,0 +1,18 @@
+version: 2
+
+sources:
+  - name: silver
+    database: HGC_DW
+    schema: SILVER
+    tables:
+      - name: STG_POSTGRESQL__PEDIDOS
+      - name: STG_POSTGRESQL__DETALLE_PEDIDO
+      - name: STG_POSTGRESQL__CANALES_VENTA
+      - name: STG_CSV__SUCURSALES
+      - name: STG_CSV__CALENDARIO
+      - name: STG_MONGODB__CAMPANAS
+      - name: STG_MARIADB__COSTOS_OPERATIVOS
+
+models:
+  - name: int_ventas_diarias_sucursal
+    description: "Ventas diarias agregadas por sucursal y canal, enriquecidas con calendario"

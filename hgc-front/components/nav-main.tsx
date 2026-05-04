@@ -44,7 +44,7 @@ export function NavMain({ items }: { items: NavItem[] }) {
               className="min-w-8 bg-secondary text-secondary-foreground hover:bg-secondary/90"
             >
               <IconCirclePlusFilled />
-              <span>Creación Rápida</span>
+              <span>Nueva Conversación</span>
             </SidebarMenuButton>
 
             <Button
