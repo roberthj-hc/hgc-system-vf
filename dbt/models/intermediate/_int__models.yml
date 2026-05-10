@@ -1,0 +1,41 @@
+version: 2
+
+sources:
+  - name: silver
+    database: HGC_DW
+    schema: SILVER
+    tables:
+      - name: STG_POSTGRESQL__PEDIDOS
+      - name: STG_POSTGRESQL__DETALLE_PEDIDO
+      - name: STG_POSTGRESQL__CANALES_VENTA
+      - name: STG_CSV__SUCURSALES
+      - name: STG_CSV__CALENDARIO
+      - name: STG_MONGODB__CAMPANAS
+      - name: STG_MARIADB__COSTOS_OPERATIVOS
+
+models:
+  - name: int_ventas_diarias_sucursal
+    description: "Ventas diarias agregadas por sucursal y canal, enriquecidas con calendario"
+
+  - name: int_producto_dia
+    description: "Granularidad diaria por producto y sucursal. Incluye métricas de precio efectivo, descuentos y flags de calendario. Base para modelos de elasticidad."
+    columns:
+      - name: FECHA
+        tests:
+          - not_null
+      - name: ID_PRODUCTO
+        tests:
+          - not_null
+      - name: ID_SUCURSAL
+        tests:
+          - not_null
+
+  - name: int_sucursal_mes
+    description: "Vista consolidada mensual por sucursal. Atribuye costos fijos, variables y prorrateo de marketing. Es el motor de los modelos de eficiencia (Cobb-Douglas)."
+    columns:
+      - name: MES_FECHA
+        tests:
+          - not_null
+      - name: ID_SUCURSAL
+        tests:
+          - not_null

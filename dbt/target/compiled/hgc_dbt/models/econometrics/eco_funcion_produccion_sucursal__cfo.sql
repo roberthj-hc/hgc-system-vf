@@ -1,0 +1,43 @@
+
+
+SELECT
+    MES_FECHA,
+    ID_SUCURSAL,
+    SUCURSAL,
+    CIUDAD,
+    TIPO_FORMATO,
+    ANTIGUEDAD_MESES,
+
+    VENTAS,
+    NUM_PEDIDOS,
+    COSTO_PERSONAL,
+    COSTO_INSUMOS,
+    COSTO_MARKETING,
+    COSTO_OPERATIVO_FIJO,
+    MARGEN_OPERATIVO,
+    MARGEN_OPERATIVO / NULLIF(VENTAS, 0)                  AS MARGEN_PCT,
+
+    LN(NULLIF(VENTAS, 0))                                 AS LN_VENTAS,
+    LN(NULLIF(COSTO_PERSONAL, 0))                         AS LN_COSTO_PERSONAL,
+    LN(NULLIF(COSTO_INSUMOS, 0))                          AS LN_COSTO_INSUMOS,
+    LN(NULLIF(COSTO_MARKETING, 0) + 1)                    AS LN_COSTO_MARKETING,
+    LN(NULLIF(COSTO_OPERATIVO_FIJO, 0) + 1)               AS LN_COSTO_FIJO,
+
+    CASE WHEN UPPER(TIPO_FORMATO) LIKE '%PREMIUM%'
+         THEN 1 ELSE 0 END                                AS D_PREMIUM,
+    CASE WHEN UPPER(CIUDAD) LIKE '%SANTA CRUZ%'
+         THEN 1 ELSE 0 END                                AS D_SANTA_CRUZ,
+    CASE WHEN UPPER(CIUDAD) LIKE '%COCHABAMBA%'
+         THEN 1 ELSE 0 END                                AS D_COCHABAMBA,
+    CASE WHEN UPPER(CIUDAD) LIKE '%LA PAZ%'
+          OR UPPER(CIUDAD) LIKE '%EL ALTO%'
+         THEN 1 ELSE 0 END                                AS D_LA_PAZ,
+
+    EXTRACT(MONTH FROM MES_FECHA)                         AS MES,
+    EXTRACT(QUARTER FROM MES_FECHA)                       AS TRIMESTRE,
+    EXTRACT(YEAR FROM MES_FECHA)                          AS ANIO
+
+FROM HGC_DW.ECONOMETRICS.int_sucursal_mes
+WHERE VENTAS > 0
+  AND COSTO_PERSONAL > 0
+  AND COSTO_INSUMOS > 0

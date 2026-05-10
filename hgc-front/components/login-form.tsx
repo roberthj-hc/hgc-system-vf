@@ -13,14 +13,18 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useAuth } from "@/lib/auth-context"
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
 
-  const router = useRouter()
+  const { login } = useAuth()
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const [submitting, setSubmitting] = useState(false)
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null)
   const [enabled, setEnabled] = useState(false)
   const imageRef = useRef<HTMLDivElement>(null)
@@ -44,6 +48,20 @@ export function LoginForm({
     return () => window.removeEventListener("mousemove", handleMouseMove)
   }, [])
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError("")
+    setSubmitting(true)
+
+    try {
+      await login(email, password)
+    } catch (err: any) {
+      setError(err.message || "Error al iniciar sesión")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   return (
     <div
       className={cn("relative flex flex-col gap-6 isolate", className)}
@@ -62,7 +80,7 @@ export function LoginForm({
       <Card className="relative z-10 overflow-hidden p-0 bg-background">
         <CardContent className="grid p-0 md:grid-cols-2 bg-background">
 
-          <form className="p-6 md:p-8">
+          <form className="p-6 md:p-8" onSubmit={handleSubmit}>
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
                 <h1 className="text-2xl font-bold">Bienvenido</h1>
@@ -71,6 +89,12 @@ export function LoginForm({
                 </p>
               </div>
 
+              {error && (
+                <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive">
+                  {error}
+                </div>
+              )}
+
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input
@@ -78,6 +102,8 @@ export function LoginForm({
                   type="email"
                   placeholder="abc@ejemplo.com"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </Field>
 
@@ -91,12 +117,23 @@ export function LoginForm({
                     ¿Olvidaste tu contraseña?
                   </a>
                 </div>
-                <Input id="password" type="password" required />
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
               </Field>
 
               <Field>
-                <Button type="submit" size="lg" className="w-full" onClick={() => router.push("/system")}>
-                  Iniciar sesión
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="w-full"
+                  disabled={submitting}
+                >
+                  {submitting ? "Ingresando…" : "Iniciar sesión"}
                 </Button>
               </Field>
 

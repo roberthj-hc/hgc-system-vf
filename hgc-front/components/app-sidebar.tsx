@@ -25,68 +25,79 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import Image from "next/image"
+import { useAuth } from "@/lib/auth-context"
+import { hasModuleAccess } from "@/lib/role-permissions"
 
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/icon.png",
+const allNavMain = [
+  {
+    title: "Minería de Datos",
+    icon: IconChartBar,
+    items: [
+      { title: "Valor del Cliente", url: "/system/predictions/clv" },
+      { title: "Fuga de Clientes", url: "/system/predictions/churn" },
+    ],
   },
-  navMain: [
-    {
-      title: "Minería de Datos",
-      icon: IconChartBar,
-      items: [
-        { title: "Valor del Cliente", url: "/system/predictions/clv" },
-        { title: "Fuga de Clientes", url: "/system/predictions/churn" },
-      ],
-    },
-    {
-      title: "Series de Tiempo",
-      icon: IconTrendingUp,
-      items: [
-        { title: "Espejo del negocio", url: "/system/time-series/mirror" },
-        { title: "Detección de rentabilidad", url: "/system/time-series/profit" },
-        { title: "Apertura de sucursales", url: "/system/time-series/simulator" },
-      ],
-    },
-    {
-      title: "Econometría",
-      icon: IconMathFunction,
-      items: [
-        { title: "Optimizador de margen", url: "/system/econometrics/price-optimizer" },
-        { title: "Monitor de eficiencia", url: "/system/econometrics/efficiency-monitor" },
-      ],
-    },
-    {
-      title: "Asistente",
-      icon: IconRobot,
-      items: [
-        { title: "Chat", url: "/system/chatbot/chat" },
-        { title: "Historial", url: "/system/chatbot/history" },
-      ],
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Ajustes",
-      url: "#",
-      icon: IconSettings,
-    },
-    {
-      title: "Obtener Ayuda",
-      url: "#",
-      icon: IconHelp,
-    },
-    {
-      title: "Buscar",
-      url: "#",
-      icon: IconSearch,
-    },
-  ],
-}
+  {
+    title: "Series de Tiempo",
+    icon: IconTrendingUp,
+    items: [
+      { title: "Ventas semanales", url: "/system/time-series/mirror" },
+      { title: "Detección de rentabilidad", url: "/system/time-series/profit" },
+      { title: "Apertura de sucursales", url: "/system/time-series/simulator" },
+    ],
+  },
+  {
+    title: "Econometría",
+    icon: IconMathFunction,
+    items: [
+      { title: "Optimizador de margen", url: "/system/econometrics/price-optimizer" },
+      { title: "Monitor de eficiencia", url: "/system/econometrics/efficiency-monitor" },
+    ],
+  },
+  {
+    title: "Asistente",
+    icon: IconRobot,
+    items: [
+      { title: "Chat", url: "/system/chatbot/chat" },
+      { title: "Historial", url: "/system/chatbot/history" },
+    ],
+  },
+]
+
+const navSecondary = [
+  {
+    title: "Ajustes",
+    url: "#",
+    icon: IconSettings,
+  },
+  {
+    title: "Obtener Ayuda",
+    url: "#",
+    icon: IconHelp,
+  },
+  {
+    title: "Buscar",
+    url: "#",
+    icon: IconSearch,
+  },
+]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useAuth()
+
+  // Filtrar módulos del sidebar según el cargo del usuario
+  const filteredNav = React.useMemo(() => {
+    if (!user) return []
+    return allNavMain.filter((item) => hasModuleAccess(user.cargo, item.title))
+  }, [user])
+
+  const userData = {
+    name: user?.nombre || "Usuario",
+    email: user?.email || "",
+    avatar: "/icon.png",
+    cargo: user?.cargo || "",
+  }
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -111,11 +122,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavMain items={filteredNav} />
+        <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={userData} />
       </SidebarFooter>
     </Sidebar>
   )

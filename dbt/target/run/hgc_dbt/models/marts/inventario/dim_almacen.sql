@@ -1,0 +1,29 @@
+
+  
+    
+
+create or replace transient table HGC_DW.GOLD.dim_almacen
+    
+    
+    
+    as (
+
+with almacenes as (
+    select * from HGC_DW.SILVER.stg_mysql__almacenes
+),
+sucursales as (
+    select id_sucursal_sk, nombre_sucursal from HGC_DW.GOLD.dim_sucursal
+)
+select
+    a.id_almacen_nk                                      as id_almacen_sk,
+    a.id_almacen_nk,
+    a.nombre                                             as nombre_almacen,
+    a.tipo                                               as tipo_almacen,
+    coalesce(s.nombre_sucursal, 'Sin Sucursal')          as nombre_sucursal_asociada
+from almacenes a
+left join sucursales s on a.id_sucursal = s.id_sucursal_sk
+    )
+;
+
+
+  

@@ -2,8 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { API_URL } from "@/lib/config";
-import { formatMoney } from "@/lib/format";
-
 import {
   LineChart,
   Line,
@@ -11,219 +9,297 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
+  CartesianGrid,
+  Legend,
   BarChart,
   Bar,
-  CartesianGrid,
+  Cell,
+  ReferenceLine,
 } from "recharts";
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-type Row = {
+// =========================
+// TIPOS DEFINIDOS
+// =========================
+type DescriptiveRow = {
   FECHA_INICIO_SEMANA: string;
+  ANIO: number;
   SEMANA_ANIO: number;
   SUCURSAL: string;
   CIUDAD: string;
+  TIPO_FORMATO: string;
   INGRESOS_SEMANA: number;
+  PEDIDOS_SEMANA: number;
   TICKET_PROMEDIO_SEMANA: number;
+  UNIDADES_SEMANA: number;
+  PEDIDOS_MISMA_SEMANA_ANIO_ANTERIOR: number;
+  VARIACION_YOY_PCT: number;
+  PEDIDOS_EN_FERIADO: number;
+  PEDIDOS_FIN_SEMANA: number;
+  PEDIDOS_DIAS_LABORALES: number;
 };
 
+const formatMoney = (v: any) => 
+  new Intl.NumberFormat("es-BO", { style: "currency", currency: "BOB" }).format(Number(v) || 0);
+
+const formatPct = (v: any) => `${(Number(v) || 0).toFixed(1)}%`;
+
 export function TimeSeriesMirror() {
-  const [data, setData] = useState<Row[]>([]);
+  const [data, setData] = useState<DescriptiveRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
 
-  // =========================
-  // FILTERS
-  // =========================
-  const [ciudad, setCiudad] = useState("ALL");
-  const [sucursal, setSucursal] = useState("ALL");
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
+  // Filtros
+  const [selectedCiudad, setSelectedCiudad] = useState("ALL");
 
-  // =========================
-  // LOAD DATA
-  // =========================
   useEffect(() => {
+    setIsMounted(true);
     async function load() {
       try {
-        const res = await fetch(`${API_URL}/api/time-series`);
+        const res = await fetch(`${API_URL}/api/time-series/description`);
         const json = await res.json();
-
-        const clean = json.map((d: any) => ({
-          ...d,
-          INGRESOS_SEMANA: Number(d.INGRESOS_SEMANA) || 0,
-          TICKET_PROMEDIO_SEMANA: Number(d.TICKET_PROMEDIO_SEMANA) || 0,
-        }));
-
-        setData(clean);
-      } catch (error) {
-        console.error("Error loading data:", error);
+        
+        if (Array.isArray(json)) {
+          const clean: DescriptiveRow[] = json.map((d: any) => {
+            const getVal = (key: string) => d[key] ?? d[key.toLowerCase()] ?? d[key.toUpperCase()];
+            
+            // Mapeo completo para cumplir con el tipo DescriptiveRow y evitar errores de TS
+            return {
+              FECHA_INICIO_SEMANA: String(getVal("FECHA_INICIO_SEMANA") || ""),
+              ANIO: Number(getVal("ANIO")) || 0,
+              SEMANA_ANIO: Number(getVal("SEMANA_ANIO")) || 0,
+              SUCURSAL: String(getVal("SUCURSAL") || "S/N"),
+              CIUDAD: String(getVal("CIUDAD") || "S/C"),
+              TIPO_FORMATO: String(getVal("TIPO_FORMATO") || "N/A"),
+              INGRESOS_SEMANA: Number(getVal("INGRESOS_SEMANA")) || 0,
+              PEDIDOS_SEMANA: Number(getVal("PEDIDOS_SEMANA")) || 0,
+              TICKET_PROMEDIO_SEMANA: Number(getVal("TICKET_PROMEDIO_SEMANA")) || 0,
+              UNIDADES_SEMANA: Number(getVal("UNIDADES_SEMANA")) || 0,
+              PEDIDOS_MISMA_SEMANA_ANIO_ANTERIOR: Number(getVal("PEDIDOS_MISMA_SEMANA_ANIO_ANTERIOR")) || 0,
+              VARIACION_YOY_PCT: Number(getVal("VARIACION_YOY_PCT")) || 0,
+              PEDIDOS_EN_FERIADO: Number(getVal("PEDIDOS_EN_FERIADO")) || 0,
+              PEDIDOS_FIN_SEMANA: Number(getVal("PEDIDOS_FIN_SEMANA")) || 0,
+              PEDIDOS_DIAS_LABORALES: Number(getVal("PEDIDOS_DIAS_LABORALES")) || 0,
+            };
+          });
+          setData(clean);
+        }
+      } catch (e) {
+        console.error("Error loading descriptive data", e);
+      } finally {
+        setLoading(false);
       }
     }
     load();
   }, []);
 
   // =========================
-  // FILTERED DATA
+  // TRANSFORMACIONES
   // =========================
-  const filtered = useMemo(() => {
-    return data.filter((d) => {
-      const matchCiudad = ciudad === "ALL" || d.CIUDAD === ciudad;
-      const matchSucursal = sucursal === "ALL" || d.SUCURSAL === sucursal;
+  
+  const filteredData = useMemo(() => 
+    data.filter(d => selectedCiudad === "ALL" || d.CIUDAD === selectedCiudad), 
+  [data, selectedCiudad]);
 
-      const date = new Date(d.FECHA_INICIO_SEMANA);
-      const matchFrom = !from || date >= new Date(from);
-      const matchTo = !to || date <= new Date(to);
+  const ciudades = useMemo(() => Array.from(new Set(data.map(d => d.CIUDAD))).filter(Boolean), [data]);
 
-      return matchCiudad && matchSucursal && matchFrom && matchTo;
+  // 1. Serie Temporal: Ingresos por Sucursal (Líneas superpuestas)
+  const timeSeriesData = useMemo(() => {
+    const groups = new Map();
+    filteredData.forEach(d => {
+      const fecha = d.FECHA_INICIO_SEMANA.split('T')[0];
+      if (!groups.has(fecha)) groups.set(fecha, { date: fecha });
+      const entry = groups.get(fecha);
+      entry[d.SUCURSAL] = d.INGRESOS_SEMANA;
     });
-  }, [data, ciudad, sucursal, from, to]);
+    return Array.from(groups.values()).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [filteredData]);
 
-  // =========================
-  // UNIQUE VALUES
-  // =========================
-  const ciudades = useMemo(() => Array.from(new Set(data.map((d) => d.CIUDAD))), [data]);
-  const sucursales = useMemo(() => Array.from(new Set(data.map((d) => d.SUCURSAL))), [data]);
+  const sucursalesUnicas = useMemo(() => Array.from(new Set(filteredData.map(d => d.SUCURSAL))), [filteredData]);
 
-  // =========================
-  // AGGREGATED CHART DATA (Group by Week)
-  // =========================
-  const aggregatedData = useMemo(() => {
-    const groups: Record<string, { label: string; ingresos: number; ticketAcum: number; count: number; rawDate: number }> = {};
+  // 2. Heatmap/Distribución: Pedidos por tipo de jornada
+  const heatmapData = useMemo(() => {
+    const totals = { Laborales: 0, "Fin de Semana": 0, Feriados: 0 };
+    filteredData.forEach(d => {
+      totals.Laborales += d.PEDIDOS_DIAS_LABORALES;
+      totals["Fin de Semana"] += d.PEDIDOS_FIN_SEMANA;
+      totals.Feriados += d.PEDIDOS_EN_FERIADO;
+    });
+    return Object.entries(totals).map(([name, value]) => ({ name, value }));
+  }, [filteredData]);
 
-    filtered.forEach((d) => {
-      const key = d.FECHA_INICIO_SEMANA; // Usamos la fecha como clave única de tiempo
-      if (!groups[key]) {
-        groups[key] = {
-          label: `S${d.SEMANA_ANIO}`,
-          ingresos: 0,
-          ticketAcum: 0,
-          count: 0,
-          rawDate: new Date(key).getTime(),
-        };
+  // 3. Comparativa YoY Semanal Agrupada
+  const yoyData = useMemo(() => {
+    const weeklyMap = new Map<number, { totalYoy: number; count: number }>();
+    
+    filteredData.forEach(d => {
+      if (!weeklyMap.has(d.SEMANA_ANIO)) weeklyMap.set(d.SEMANA_ANIO, { totalYoy: 0, count: 0 });
+      const week = weeklyMap.get(d.SEMANA_ANIO)!;
+      week.totalYoy += d.VARIACION_YOY_PCT;
+      week.count += 1;
+    });
+
+    return Array.from(weeklyMap.entries())
+      .map(([semana, stats]) => ({
+        semana: `S${semana}`,
+        yoy: stats.totalYoy / stats.count
+      }))
+      .sort((a, b) => parseInt(a.semana.slice(1)) - parseInt(b.semana.slice(1)))
+      .slice(-12);
+  }, [filteredData]);
+
+  // 4. RANKING CORREGIDO: Promedio por Sucursal
+  const rankingData = useMemo(() => {
+    const stats = new Map<string, { totalTicket: number; count: number; ciudad: string }>();
+
+    filteredData.forEach((d) => {
+      if (!stats.has(d.SUCURSAL)) {
+        stats.set(d.SUCURSAL, { totalTicket: 0, count: 0, ciudad: d.CIUDAD });
       }
-      groups[key].ingresos += d.INGRESOS_SEMANA;
-      groups[key].ticketAcum += d.TICKET_PROMEDIO_SEMANA;
-      groups[key].count += 1;
+      const curr = stats.get(d.SUCURSAL)!;
+      curr.totalTicket += d.TICKET_PROMEDIO_SEMANA;
+      curr.count += 1;
     });
 
-    // Convertimos a array, ordenamos por fecha y calculamos promedios si es necesario
-    return Object.values(groups)
-      .sort((a, b) => a.rawDate - b.rawDate)
-      .map((g) => ({
-        label: g.label,
-        INGRESOS_SEMANA: g.ingresos,
-        TICKET_PROMEDIO: g.ticketAcum / g.count, // Promedio de las sucursales en esa semana
-      }));
-  }, [filtered]);
+    return Array.from(stats.entries())
+      .map(([sucursal, info]) => ({
+        sucursal,
+        ciudad: info.ciudad,
+        ticketPromedio: info.totalTicket / info.count,
+      }))
+      .sort((a, b) => b.ticketPromedio - a.ticketPromedio)
+      .slice(0, 6);
+  }, [filteredData]);
 
-  // =========================
-  // SMOOTH SERIES
-  // =========================
-  const smooth = useMemo(() => {
-    return aggregatedData.map((d, i, arr) => {
-      const prev = arr[i - 1]?.INGRESOS_SEMANA ?? d.INGRESOS_SEMANA;
-      const next = arr[i + 1]?.INGRESOS_SEMANA ?? d.INGRESOS_SEMANA;
-
-      return {
-        ...d,
-        INGRESOS_SMOOTH: (prev + d.INGRESOS_SEMANA + next) / 3,
-      };
-    });
-  }, [aggregatedData]);
-
-  // =========================
-  // TOP SUCURSALES
-  // =========================
-  const top = useMemo(() => {
-    const map: Record<string, number> = {};
-    filtered.forEach((d) => {
-      map[d.SUCURSAL] = (map[d.SUCURSAL] || 0) + d.INGRESOS_SEMANA;
-    });
-
-    return Object.entries(map)
-      .map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 8);
-  }, [filtered]);
-
-  // =========================
-  // KPIs (Calculados sobre el filtrado total)
-  // =========================
-  const totalIngresos = useMemo(() => filtered.reduce((a, b) => a + b.INGRESOS_SEMANA, 0), [filtered]);
-  const promedioTicket = useMemo(() => 
-    filtered.length ? filtered.reduce((a, b) => a + b.TICKET_PROMEDIO_SEMANA, 0) / filtered.length : 0
-  , [filtered]);
+  if (!isMounted || loading) return <div className="h-screen flex items-center justify-center">Cargando Dashboard Descriptivo...</div>;
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex flex-wrap gap-3 justify-between items-center">
-        <h1 className="text-xl font-bold">Dashboard Descriptivo — Análisis Semanal</h1>
-        <div className="flex gap-2 flex-wrap">
-          <Select value={ciudad} onValueChange={setCiudad}>
-            <SelectTrigger className="w-[160px]"><SelectValue placeholder="Ciudad" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">Todas</SelectItem>
-              {ciudades.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-            </SelectContent>
-          </Select>
-
-          <Select value={sucursal} onValueChange={setSucursal}>
-            <SelectTrigger className="w-[200px]"><SelectValue placeholder="Sucursal" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">Todas</SelectItem>
-              {sucursales.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-            </SelectContent>
-          </Select>
-
-          <input type="date" className="border rounded px-2" value={from} onChange={(e) => setFrom(e.target.value)} />
-          <input type="date" className="border rounded px-2" value={to} onChange={(e) => setTo(e.target.value)} />
+    <div className="p-6 space-y-6 min-h-screen">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Análisis Descriptivo</h1>
+          <p className="text-muted-foreground">Métricas históricas y rendimiento por punto de venta.</p>
         </div>
+        <Select value={selectedCiudad} onValueChange={setSelectedCiudad}>
+          <SelectTrigger className="w-[200px] bg-white border-slate-200 shadow-sm">
+            <SelectValue placeholder="Filtrar por Ciudad" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">Todas las Ciudades</SelectItem>
+            {ciudades.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+          </SelectContent>
+        </Select>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        <Card>
-          <CardHeader><CardTitle>Ingresos</CardTitle></CardHeader>
-          <CardContent className="text-2xl font-bold">{formatMoney(totalIngresos)}</CardContent>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        {/* Serie Temporal */}
+        <Card className="md:col-span-2 shadow-sm border-slate-200">
+          <CardHeader>
+            <CardTitle>Ingresos Semanales por Sucursal</CardTitle>
+            <CardDescription>Evolución de ventas netas (Bs.)</CardDescription>
+          </CardHeader>
+          <CardContent className="h-[400px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={timeSeriesData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis dataKey="date" fontSize={11} />
+                <YAxis fontSize={11} tickFormatter={(v) => `Bs.${v/1000}k`} />
+                <Tooltip formatter={(v) => formatMoney(v)} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                {sucursalesUnicas.map((suc, i) => (
+                  <Line
+                    key={suc}
+                    type="monotone"
+                    dataKey={suc}
+                    stroke={`hsl(${i * 60}, 70%, 45%)`}
+                    strokeWidth={2.5}
+                    dot={false}
+                    activeDot={{ r: 5 }}
+                  />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
         </Card>
-        <Card>
-          <CardHeader><CardTitle>Ticket promedio</CardTitle></CardHeader>
-          <CardContent className="text-2xl font-bold">{formatMoney(promedioTicket)}</CardContent>
+
+        {/* Distribución de Demanda */}
+        <Card className="shadow-sm border-slate-200">
+          <CardHeader>
+            <CardTitle>Distribución de Demanda</CardTitle>
+            <CardDescription>Pedidos totales por jornada</CardDescription>
+          </CardHeader>
+          <CardContent className="h-[400px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={heatmapData} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
+                <XAxis type="number" hide />
+                <YAxis dataKey="name" type="category" fontSize={12} width={100} stroke="#64748b" />
+                <Tooltip cursor={{fill: '#f1f5f9'}} />
+                <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={45}>
+                  {heatmapData.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={['#3b82f6', '#8b5cf6', '#f43f5e'][index % 3]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
         </Card>
-        <Card>
-          <CardHeader><CardTitle>Registros</CardTitle></CardHeader>
-          <CardContent className="text-2xl font-bold">{filtered.length}</CardContent>
+
+        {/* Crecimiento YoY */}
+        <Card className="shadow-sm border-slate-200">
+          <CardHeader>
+            <CardTitle>Crecimiento YoY %</CardTitle>
+            <CardDescription>Variación vs año anterior (Promedio Red)</CardDescription>
+          </CardHeader>
+          <CardContent className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={yoyData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis dataKey="semana" fontSize={11} />
+                <YAxis fontSize={11} unit="%" />
+                <Tooltip formatter={(v) => formatPct(v)} contentStyle={{ borderRadius: '8px' }} />
+                <ReferenceLine y={0} stroke="#475569" strokeWidth={1} />
+                <Bar dataKey="yoy">
+                  {yoyData.map((entry, index) => (
+                    <Cell key={index} fill={entry.yoy >= 0 ? "#10b981" : "#f43f5e"} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* RANKING TICKET PROMEDIO CORREGIDO */}
+        <Card className="md:col-span-2 shadow-sm border-slate-200">
+          <CardHeader>
+            <CardTitle>Ranking de Ticket Promedio</CardTitle>
+            <CardDescription>Eficiencia de venta promedio por sucursal</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {rankingData.map((item, i) => (
+                <div key={item.sucursal} className="flex items-center justify-between p-4 border rounded-xl bg-white">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-lg text-blue-600 font-bold text-sm border border-blue-100">
+                      {i + 1}
+                    </div>
+                    <div>
+                      <p className="font-bold text-slate-800 text-sm leading-none mb-1">{item.sucursal}</p>
+                      <p className="text-[11px] text-slate-500 font-medium uppercase tracking-tighter">{item.ciudad}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-base font-black text-slate-900">{formatMoney(item.ticketPromedio)}</p>
+                    <p className="text-[10px] text-emerald-600 font-bold uppercase">Promedio</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
         </Card>
       </div>
-
-      <Card>
-        <CardHeader><CardTitle>Tendencia de ingresos</CardTitle></CardHeader>
-        <CardContent className="h-[380px]">
-          <ResponsiveContainer width="100%" height={320}>
-            <LineChart data={smooth}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="label" />
-              <YAxis tickFormatter={formatMoney} />
-              <Tooltip formatter={(val: number) => formatMoney(val)} />
-              <Line type="monotone" dataKey="INGRESOS_SMOOTH" stroke="#6366f1" dot={false} strokeWidth={3} />
-            </LineChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader><CardTitle>Top sucursales</CardTitle></CardHeader>
-        <CardContent className="h-[380px]">
-          <ResponsiveContainer width="100%" height={320}>
-            <BarChart data={top}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis tickFormatter={formatMoney} />
-              <Tooltip formatter={(val: number) => formatMoney(val)} />
-              <Bar dataKey="value" fill="#f97316" />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
     </div>
   );
 }

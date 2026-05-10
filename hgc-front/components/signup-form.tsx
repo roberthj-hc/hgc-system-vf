@@ -13,14 +13,29 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useAuth } from "@/lib/auth-context"
+import { ALL_ROLES, ROLE_LABELS, type UserRole } from "@/lib/role-permissions"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
 
-  const router = useRouter()
+  const { signup } = useAuth()
+  const [nombre, setNombre] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [cargo, setCargo] = useState<UserRole>("STAFF")
+  const [error, setError] = useState("")
+  const [submitting, setSubmitting] = useState(false)
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null)
   const [enabled, setEnabled] = useState(false)
   const imageRef = useRef<HTMLDivElement>(null)
@@ -44,6 +59,31 @@ export function SignupForm({
     return () => window.removeEventListener("mousemove", handleMouseMove)
   }, [])
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError("")
+
+    if (password !== confirmPassword) {
+      setError("Las contraseñas no coinciden")
+      return
+    }
+
+    if (password.length < 8) {
+      setError("La contraseña debe tener al menos 8 caracteres")
+      return
+    }
+
+    setSubmitting(true)
+
+    try {
+      await signup({ nombre, email, password, cargo })
+    } catch (err: any) {
+      setError(err.message || "Error al registrarse")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   return (
     <div
       className={cn("relative flex flex-col gap-6 isolate", className)}
@@ -62,14 +102,33 @@ export function SignupForm({
       <Card className="relative z-10 overflow-hidden p-0 bg-background">
         <CardContent className="grid p-0 md:grid-cols-2 bg-background">
 
-          <form className="p-6 md:p-8">
+          <form className="p-6 md:p-8" onSubmit={handleSubmit}>
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
                 <h1 className="text-2xl font-bold">Crea tu cuenta</h1>
                 <p className="text-sm text-balance text-muted-foreground">
-                  Ingresa tu correo electrónico para crear tu cuenta
+                  Ingresa tus datos para crear tu cuenta
                 </p>
               </div>
+
+              {error && (
+                <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive">
+                  {error}
+                </div>
+              )}
+
+              <Field>
+                <FieldLabel htmlFor="nombre">Nombre completo</FieldLabel>
+                <Input
+                  id="nombre"
+                  type="text"
+                  placeholder="Juan Pérez"
+                  required
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                />
+              </Field>
+
               <Field>
                 <FieldLabel htmlFor="email">Correo electrónico</FieldLabel>
                 <Input
@@ -77,33 +136,77 @@ export function SignupForm({
                   type="email"
                   placeholder="abc@ejemplo.com"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </Field>
+
+              <Field>
+                <FieldLabel htmlFor="cargo">Cargo</FieldLabel>
+
+                <Select
+                  value={cargo}
+                  onValueChange={(value) => setCargo(value as UserRole)}
+                >
+                  <SelectTrigger id="cargo">
+                    <SelectValue placeholder="Selecciona un cargo" />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    {ALL_ROLES.map((role) => (
+                      <SelectItem key={role} value={role}>
+                        {ROLE_LABELS[role]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+
               <Field>
                 <Field className="grid grid-cols-2 gap-4">
                   <Field>
                     <FieldLabel htmlFor="password">Contraseña</FieldLabel>
-                    <Input id="password" type="password" required />
+                    <Input
+                      id="password"
+                      type="password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
                   </Field>
                   <Field>
                     <FieldLabel htmlFor="confirm-password">
                       Confirmar contraseña
                     </FieldLabel>
-                    <Input id="confirm-password" type="password" required />
+                    <Input
+                      id="confirm-password"
+                      type="password"
+                      required
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
                   </Field>
                 </Field>
                 <FieldDescription>
                   Debe tener al menos 8 caracteres.
                 </FieldDescription>
               </Field>
+
               <Field>
-                <Button type="submit" size="lg" className="w-full" onClick={() => router.push("/auth/login")}>
-                  Crear cuenta
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="w-full"
+                  disabled={submitting}
+                >
+                  {submitting ? "Creando cuenta…" : "Crear cuenta"}
                 </Button>
               </Field>
+
               <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
                 O continúa con
               </FieldSeparator>
+
               <Field className="grid grid-cols-3 gap-4">
                 <Button variant="outline" type="button">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -133,6 +236,7 @@ export function SignupForm({
                   <span className="sr-only">Iniciar sesión con Meta</span>
                 </Button>
               </Field>
+
               <FieldDescription className="text-center">
                 ¿Ya tienes una cuenta?{" "}
                 <Link href="/auth/login" className="underline">

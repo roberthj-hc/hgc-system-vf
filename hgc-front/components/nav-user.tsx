@@ -29,7 +29,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 
-import Link from "next/link"
+import { useAuth } from "@/lib/auth-context"
+import { ROLE_LABELS, type UserRole } from "@/lib/role-permissions"
 
 export function NavUser({
   user,
@@ -38,9 +39,22 @@ export function NavUser({
     name: string
     email: string
     avatar: string
+    cargo?: string
   }
 }) {
   const { isMobile } = useSidebar()
+  const { logout } = useAuth()
+
+  const initials = user.name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2)
+
+  const cargoLabel = user.cargo
+    ? ROLE_LABELS[user.cargo as UserRole] || user.cargo
+    : ""
 
   return (
     <SidebarMenu>
@@ -53,7 +67,7 @@ export function NavUser({
             >
               <Avatar className="h-8 w-8 rounded-lg grayscale">
                 <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
@@ -74,12 +88,12 @@ export function NavUser({
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
                   <span className="truncate text-xs text-muted-foreground">
-                    {user.email}
+                    {cargoLabel || user.email}
                   </span>
                 </div>
               </div>
@@ -96,12 +110,10 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <Link href={"/"}>
-              <DropdownMenuItem>
-                <IconLogout /> 
-                Salir
-              </DropdownMenuItem>
-            </Link>
+            <DropdownMenuItem onClick={logout}>
+              <IconLogout />
+              Salir
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
