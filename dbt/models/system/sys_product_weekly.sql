@@ -5,3 +5,5 @@ select v.*, p.nombre as producto, p.costo_estandar,
 from {{ ref('int_ventas_producto_semana') }} v
 left join {{ ref('stg_postgresql__productos') }} p on p.id_producto_nk = v.id_producto
 left join {{ ref('stg_csv__sucursales') }} s on s.id_sucursal_nk = v.id_sucursal
+
+where v.semana < date_trunc('week', {{ system_as_of() }})

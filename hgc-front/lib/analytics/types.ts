@@ -7,7 +7,7 @@ export interface AnalyticsReport {
   branches: { id_sucursal: number; sucursal: string }[];
   series: Row[]; forecast: Row[];
   pagination: { page: number; pages: number; total: number; page_size: number };
-  release_id: string; load_id: string; published_at: string;
+  evaluated_at: string; release_id: string; load_id: string; published_at: string;
   cutoff?: string; limitations?: string;
   quality: { table: string; rows: number }[];
   model?: { run_id: string; algorithm: string; cutoff: string; validation: string;

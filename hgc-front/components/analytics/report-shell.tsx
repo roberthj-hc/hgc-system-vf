@@ -1,4 +1,5 @@
 "use client";
+import "./analytics.css";
 import type { ReactNode } from "react";
 import { RefreshCw, Database, ShieldCheck, Clock3 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,10 +12,10 @@ import { useReport } from "@/lib/analytics/use-report";
 export function ReportShell({state,children}:{state:ReturnType<typeof useReport>;children:ReactNode}) {
   const {data,error,loading}=state;
   const cutoff=data?.model?.cutoff || data?.cutoff;
-  const stale=cutoff && Date.now()-new Date(cutoff).getTime()>45*86400000;
-  return <div className="space-y-6" aria-busy={loading}>
+  const stale=cutoff && new Date(data!.evaluated_at).getTime()-new Date(cutoff).getTime()>45*86400000;
+  return <div data-analytics className="space-y-6" aria-busy={loading}>
     <div className="flex flex-wrap items-start justify-between gap-4">
-      <div><p className="text-xs font-semibold uppercase tracking-[.18em] text-primary">HGC · Inteligencia de negocio</p>
+      <div><p className="text-xs font-semibold uppercase tracking-[.18em] text-amber-700 dark:text-amber-400">HGC · Inteligencia de negocio</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight">{data?.title || "Análisis del negocio"}</h1>
         <p className="mt-2 max-w-3xl text-sm text-muted-foreground">{data?.description || "Consultando la última publicación validada…"}</p></div>
       <Button variant="outline" size="sm" onClick={state.retry} disabled={loading}><RefreshCw className={loading ? "animate-spin" : ""}/>Actualizar</Button>
@@ -38,7 +39,7 @@ export function ReportShell({state,children}:{state:ReturnType<typeof useReport>
       <div className={loading ? "space-y-6 opacity-60" : "space-y-6"}>{children}</div>
       <div className="rounded-xl border bg-muted/20 p-5 text-sm">
         <h2 className="font-semibold">Calidad y alcance del análisis</h2>
-        <p className="mt-2 text-muted-foreground">{data.model?.limitations || data.limitations}</p>
+        <p className="mt-2 text-muted-foreground">{[data.limitations, data.model?.limitations].filter(Boolean).join(" ")}</p>
         {data.model && <p className="mt-2 text-muted-foreground">Modelo: {data.model.algorithm}. Validación: {data.model.validation}.</p>}
         <details className="mt-3"><summary className="cursor-pointer text-xs font-medium">Ver trazabilidad y métricas</summary>
           <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-2"><div><dt>Publicación</dt><dd className="font-mono break-all">{data.release_id}</dd></div><div><dt>Carga de datos</dt><dd className="font-mono break-all">{data.load_id}</dd></div>

@@ -4,7 +4,8 @@ models:
     description: Daily branch sales serving contract; completed orders only.
     data_tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns: [ID_SUCURSAL, FECHA]
+          arguments:
+            combination_of_columns: [ID_SUCURSAL, FECHA]
     columns:
       - name: FECHA
         data_tests: [not_null]
@@ -24,14 +25,16 @@ models:
   - name: sys_branch_monthly
     data_tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns: [ID_SUCURSAL, MES_FECHA]
+          arguments:
+            combination_of_columns: [ID_SUCURSAL, MES_FECHA]
     columns:
-      - name: COSTO_OP_TOTAL
+      - name: COSTOS_DISPONIBLES
         data_tests: [not_null]
   - name: sys_product_weekly
     data_tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns: [ID_SUCURSAL, ID_PRODUCTO, SEMANA]
+          arguments:
+            combination_of_columns: [ID_SUCURSAL, ID_PRODUCTO, SEMANA]
     columns:
       - name: COSTO_ESTANDAR
         data_tests: [not_null]

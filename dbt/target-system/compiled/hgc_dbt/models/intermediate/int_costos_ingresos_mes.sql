@@ -18,10 +18,12 @@ unidades_mes AS (
         DATE_TRUNC('MONTH', p.FECHA_HORA::DATE)          AS MES_FECHA,
         p.ID_SUCURSAL,
         SUM(d.CANTIDAD)                                  AS UNIDADES_VENDIDAS,
+        SUM(d.CANTIDAD * pr.COSTO_ESTANDAR)               AS COSTO_PRODUCTOS_ESTIMADO,
         COUNT(DISTINCT d.ID_PRODUCTO)                    AS SKU_ACTIVOS
     FROM HGC_DWH.SILVER.stg_postgresql__pedidos p
     INNER JOIN HGC_DWH.SILVER.stg_postgresql__detalle_pedido d
             ON d.ID_PEDIDO = p.ID_PEDIDO_NK
+    LEFT JOIN HGC_DWH.SILVER.stg_postgresql__productos pr ON pr.ID_PRODUCTO_NK = d.ID_PRODUCTO
     WHERE p.ID_ESTADO = 1
     GROUP BY 1, 2
 ),
@@ -31,8 +33,8 @@ costos_mes AS (
         DATE_TRUNC('MONTH', FECHA_PAGO)                  AS MES_FECHA,
         ID_SUCURSAL,
         SUM(MONTO)                                       AS COSTO_OP_TOTAL,
-        SUM(CASE WHEN CATEGORIA = 'Fijo'     THEN MONTO ELSE 0 END) AS COSTO_FIJO,
-        SUM(CASE WHEN CATEGORIA = 'Variable' THEN MONTO ELSE 0 END) AS COSTO_VARIABLE,
+        SUM(CASE WHEN UPPER(TRIM(CATEGORIA)) IN ('FIJO', 'ALQUILER', 'SERVICIOS BÁSICOS')     THEN MONTO ELSE 0 END) AS COSTO_FIJO,
+        SUM(CASE WHEN UPPER(TRIM(CATEGORIA)) = 'VARIABLE' THEN MONTO ELSE 0 END) AS COSTO_VARIABLE,
         COUNT(DISTINCT SUBCATEGORIA)                     AS N_SUBCATEGORIAS
     FROM HGC_DWH.SILVER.stg_mariadb__costos_operativos
     GROUP BY 1, 2
@@ -46,6 +48,7 @@ SELECT
     v.DESCUENTOS_TOTAL,
     v.TICKET_PROMEDIO,
     u.UNIDADES_VENDIDAS,
+    u.COSTO_PRODUCTOS_ESTIMADO,
     u.SKU_ACTIVOS,
     c.COSTO_OP_TOTAL,
     c.COSTO_FIJO,

@@ -12,6 +12,9 @@ def validate(frame, keys):
         raise ValueError('Empty source: previous serving snapshot preserved')
     if frame[keys].isna().any().any() or frame.duplicated(keys).any():
         raise ValueError(f'Invalid grain: {keys}')
-    for column in ('ingresos', 'pedidos', 'unidades', 'costo_op_total'):
+    for column in ('ingresos', 'pedidos', 'unidades'):
         if column in frame and (frame[column].isna().any() or (frame[column] < 0).any()):
             raise ValueError(f'Invalid measure: {column}')
+
+    if "costo_op_total" in frame and (frame.costo_op_total.dropna() < 0).any():
+        raise ValueError("Negative operating cost")

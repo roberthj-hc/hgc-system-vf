@@ -19,12 +19,14 @@ def cost_features(frame):
 def train_economics(monthly, products, sales, load_id):
     monthly = monthly.copy()
     monthly.mes_fecha = pd.to_datetime(monthly.mes_fecha)
-    for c in ('ingresos_netos','costo_op_total','costo_fijo','costo_variable','n_pedidos'):
+    for c in ('ingresos_netos','costo_op_total','costo_fijo','costo_variable','costo_productos_estimado','n_pedidos'):
         monthly[c] = pd.to_numeric(monthly[c])
     # Omit the final incomplete month relative to sales cutoff.
     cutoff = pd.Timestamp(sales['model']['cutoff'])
     last_complete = (cutoff+pd.Timedelta(days=1)).to_period('M').start_time
     monthly = monthly[monthly.mes_fecha < last_complete].sort_values(['mes_fecha','id_sucursal']).reset_index(drop=True)
+    missing_costs = int(monthly.costo_op_total.isna().sum())
+    monthly = monthly.dropna(subset=["costo_op_total"]).reset_index(drop=True)
     dates = sorted(monthly.mes_fecha.unique())
     if len(dates) < 12:
         raise ValueError('Cost model needs at least twelve complete months')
@@ -45,17 +47,18 @@ def train_economics(monthly, products, sales, load_id):
         {'target':'log1p_operating_cost','validation_months':3,'cutoff':str(monthly.mes_fecha.max().date())},load_id)
     monthly['costo_esperado'] = np.maximum(0,np.expm1(model.predict(X)))
     monthly['desviacion_costo'] = monthly.costo_op_total-monthly.costo_esperado
-    monthly['utilidad'] = monthly.ingresos_netos-monthly.costo_op_total
+    monthly['costo_total_estimado'] = monthly.costo_op_total+monthly.costo_productos_estimado
+    monthly['utilidad'] = monthly.ingresos_netos-monthly.costo_total_estimado
     monthly['margen'] = np.where(monthly.ingresos_netos>0,monthly.utilidad/monthly.ingresos_netos,0)
     monthly['estado'] = np.where(monthly.desviacion_costo>tolerance,'Revisar costo','Dentro de referencia')
     latest = monthly[monthly.mes_fecha==monthly.mes_fecha.max()].copy()
     info = {'run_id':run_id,'algorithm':'Ridge · costo logarítmico','cutoff':str(monthly.mes_fecha.max().date()),
             'metrics':{'mae_cost_bob':mae},'validation':'Últimos tres meses completos',
-            'limitations':'Referencia estadística de costo operativo; no demuestra desperdicio ni ahorro realizable. Rentabilidad excluye costos ausentes en bronze.'}
+            'limitations':f'{missing_costs} meses-sucursal sin costos excluidos; nunca imputados como cero. Referencia estadística de costo operativo; no demuestra desperdicio ni ahorro realizable. Rentabilidad incluye alquiler, electricidad y costo estándar de productos (estimación, no costo contable histórico). No incluye nómina u otros gastos ausentes en bronze.'}
     efficiency = report('Monitor de eficiencia','Costo observado frente a referencia ajustada por volumen y sucursal.',records(latest),
         [kpi('Costo operativo',latest.costo_op_total.sum(),'money'),kpi('Sucursales a revisar',(latest.estado=='Revisar costo').sum()),
          kpi('Error de referencia',mae,'money')],info)
-    profit = report('Detección de rentabilidad','Ingresos menos costos operativos registrados; meses completos.',records(monthly.tail(12*latest.shape[0])),
+    profit = report('Detección de rentabilidad','Ingresos menos gastos registrados y costo estándar estimado de productos; meses con cobertura.',records(monthly.tail(12*latest.shape[0])),
         [kpi('Utilidad · último mes',latest.utilidad.sum(),'money'),
          kpi('Margen ponderado',latest.utilidad.sum()/max(latest.ingresos_netos.sum(),1),'percent'),
          kpi('Sucursales con pérdida',(latest.utilidad<0).sum())],None,
@@ -68,11 +71,12 @@ def train_economics(monthly, products, sales, load_id):
         analogs.append({'id_sucursal':int(branch),'sucursal':entry.sucursal,'ciudad':entry.ciudad,
             'ingreso_mensual':float(forecast.head(28).ingresos.sum()*30/28),
             'costo_fijo':float(group.costo_fijo.mean()),
-            'ratio_variable':float(group.costo_variable.sum()/max(group.ingresos_netos.sum(),1)),
-            'margen_historico':float(group.utilidad.sum()/max(group.ingresos_netos.sum(),1))})
+            'ratio_variable':float((group.costo_variable.sum()+group.costo_productos_estimado.sum())/max(group.ingresos_netos.sum(),1)),
+            'margen_historico':float(group.utilidad.sum()/max(group.ingresos_netos.sum(),1)),
+            'corte_costos':str(entry.mes_fecha.date())})
     expansion = report('Apertura de sucursales','Simulación por sucursal comparable; ajusta demanda, costos e inversión.',analogs,
         [kpi('Sucursales comparables',len(analogs)),kpi('Horizonte del modelo',84,'days')],sales['model'],
-        limitations='Escenario por analogía, no predicción geográfica. No incluye canibalización, competencia ni costos no registrados.')
+        limitations=f'Escenario por analogía, no predicción geográfica. Costos disponibles hasta {monthly.mes_fecha.max().date()}; actualizar presupuestos antes de decidir. Alquiler y electricidad se tratan como base fija; productos como costo variable estándar. No incluye nómina, canibalización, competencia ni costos no registrados.')
     price = train_prices(products,load_id)
     return {'profit':profit,'efficiency':efficiency,'expansion':expansion,'margin':price}
 

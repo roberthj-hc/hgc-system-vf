@@ -1,5 +1,6 @@
 """MLflow lineage and consistent report contracts."""
 import json
+import hashlib
 import subprocess
 from datetime import datetime, timezone
 
@@ -25,7 +26,12 @@ def track(name, model, inputs, predictions, metrics, params, load_id):
             revision = subprocess.run(['git', 'rev-parse', 'HEAD'], cwd=ROOT, capture_output=True, text=True).stdout.strip()
         except FileNotFoundError:
             revision = 'unavailable'
-        mlflow.set_tags({'load_id': load_id, 'git_revision': revision, 'scope': 'system-only'})
+        source = hashlib.sha256()
+        for folder, pattern in [('hgc-ml', '*.py'), ('dbt/models/system', '*.sql'), ('dbt/models/intermediate', '*.sql')]:
+            for path in sorted((ROOT/folder).rglob(pattern)):
+                source.update(str(path.relative_to(ROOT)).encode())
+                source.update(path.read_bytes())
+        mlflow.set_tags({'load_id': load_id, 'git_revision': revision, 'source_sha256': source.hexdigest(), 'scope': 'system-only'})
         mlflow.log_params(params)
         mlflow.log_metrics({k: float(v) for k, v in metrics.items() if np.isfinite(v)})
         mlflow.sklearn.log_model(model, name='model', input_example=inputs.head(3),

@@ -12,12 +12,14 @@ router.get('/:module', authorizeModule, async (req,res,next) => {
   try {
     const options=queryOptions(req.query);
     res.set('Cache-Control','private, no-store');
-    res.json(service.viewReport(await service.getReport(req.params.module),req.params.module,options));
+    const module=req.params.module;
+    const data=await service.getReport(module);
+    res.json(['clv','churn'].includes(module) ? await service.customerView(data,module,options) : service.viewReport(data,module,options));
   } catch(error) { next(error); }
 });
 router.post('/:module/scenario', authorizeModule, async (req,res,next) => {
-  if(req.params.module!=='expansion') return res.status(404).json({error:'Escenario no disponible'});
-  try { res.json(await service.expansionScenario(req.body)); } catch(error) { next(error); }
+  if(!['expansion','margin'].includes(req.params.module)) return res.status(404).json({error:'Escenario no disponible'});
+  try { res.json(await (req.params.module==='margin' ? service.marginScenario(req.body) : service.expansionScenario(req.body))); } catch(error) { next(error); }
 });
 router.use((error,req,res,next) => {
   const unavailable = ['42P01','3F000','ECONNREFUSED'].includes(error.code);

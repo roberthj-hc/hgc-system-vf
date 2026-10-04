@@ -8,7 +8,7 @@ import { ReportShell } from "@/components/analytics/report-shell";
 import { ReportTable } from "@/components/analytics/report-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-type Scenario={revenue:number;fixed_cost:number;variable_cost:number;profit:number;break_even:number|null;payback_months:number|null;limitations:string};
+type Scenario={id_sucursal:number;revenue:number;fixed_cost:number;variable_cost:number;profit:number;break_even:number|null;payback_months:number|null;limitations:string};
 export function TimeSeriesSimulator() {
   const state=useReport("expansion");
   const {token}=useAuth();
@@ -37,7 +37,7 @@ export function TimeSeriesSimulator() {
         <label className="text-sm">Inversión inicial (Bs.)<Input className="mt-2" type="number" min="0" max="100000000" value={investment} onChange={e=>{setInvestment(Number(e.target.value));setScenario(null);}}/></label>
       </div><Button onClick={simulate} disabled={busy || state.branch==="all"}>{busy?"Calculando…":"Calcular escenario"}</Button>{state.branch==="all" && <span className="ml-3 text-xs text-muted-foreground">Elige una sucursal para continuar.</span>}
       {error && <p role="alert" className="mt-4 text-sm text-destructive">{error}</p>}
-      {scenario && <div className="mt-5 grid gap-4 rounded-lg bg-muted/30 p-5 sm:grid-cols-3">{[
+      {scenario && scenario.id_sucursal===Number(state.branch) && <div className="mt-5 grid gap-4 rounded-lg bg-muted/30 p-5 sm:grid-cols-3">{[
         ["Ingreso mensual",scenario.revenue,"money"],["Costo fijo",scenario.fixed_cost,"money"],["Costo variable",scenario.variable_cost,"money"],
         ["Utilidad mensual estimada",scenario.profit,"money"],["Venta de equilibrio",scenario.break_even,"money"],["Recuperación (meses)",scenario.payback_months,"number"]
       ].map(([label,value,unit])=><div key={String(label)}><p className="text-xs text-muted-foreground">{label}</p><p className="mt-1 text-xl font-semibold">{format(value,String(unit))}</p></div>)}

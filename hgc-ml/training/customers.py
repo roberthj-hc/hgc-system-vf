@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 from sklearn.dummy import DummyRegressor, DummyClassifier
-from sklearn.metrics import mean_absolute_error, brier_score_loss, roc_auc_score
+from sklearn.metrics import mean_absolute_error, root_mean_squared_error, brier_score_loss, roc_auc_score
 
 from training.common import track, report, kpi, records
 
@@ -61,8 +61,9 @@ def train_customers(orders, load_id):
             predict = lambda m, x: m.predict_proba(x)[:,list(m.classes_).index(1)]
         else:
             candidate = RandomForestRegressor(n_estimators=100, max_depth=8, min_samples_leaf=20, random_state=42, n_jobs=2)
-            baseline = DummyRegressor(strategy='median')
-            score = mean_absolute_error
+            baseline = DummyRegressor(strategy='mean')
+            # Expected spend is a conditional mean; MAE would favor an all-zero median.
+            score = root_mean_squared_error
             predict = lambda m, x: np.maximum(0,m.predict(x))
         for model in (candidate, baseline):
             model.fit(train[FEATURES],train[target])
@@ -74,9 +75,11 @@ def train_customers(orders, load_id):
         train_valid = train_valid.sample(n=min(len(train_valid),120000), random_state=42)
         selected.fit(train_valid[FEATURES],train_valid[target])
         test_pred = predict(selected,test[FEATURES])
-        metric_name = 'brier' if classifier else 'mae_bob'
+        metric_name = 'brier' if classifier else 'rmse_bob'
         metrics = {metric_name: score(test[target],test_pred), 'validation_candidate': candidate_score,
                    'validation_baseline': baseline_score, 'test_customers': len(test)}
+        if not classifier:
+            metrics['mae_bob'] = mean_absolute_error(test[target],test_pred)
         if classifier and test[target].nunique() == 2:
             metrics['roc_auc'] = roc_auc_score(test[target], test_pred)
         refit = dataset.sample(n=min(len(dataset),180000), random_state=42)
@@ -85,11 +88,15 @@ def train_customers(orders, load_id):
             {'algorithm':algorithm, 'history_days':180, 'horizon_days':90, 'test_cutoff':str(cutoffs[-1].date()),
              'label_maturity':str(cutoff.date()), 'split':'chronological_nonoverlapping_labels'}, load_id)
         result[name] = predict(selected,current[FEATURES])
-        infos[name] = {'run_id':run_id, 'algorithm':algorithm, 'metrics':metrics, 'cutoff':str(cutoff.date()),
+        infos[name] = {'run_id':run_id, 'algorithm':('Tasa poblacional validada' if algorithm == 'DummyClassifier' else 'Ingreso medio validado' if algorithm == 'DummyRegressor' else algorithm), 'metrics':metrics, 'cutoff':str(cutoff.date()),
                        'validation':'Cohortes temporales; etiquetas maduras; evaluación final fuera de selección',
                        'limitations': 'Ingreso esperado a 90 días, no utilidad ni valor de vida completo.' if name == 'clv'
                        else 'Probabilidad de no comprar durante 90 días. No implica baja definitiva; umbral operativo de 0,5.'}
+        if algorithm.startswith('Dummy'):
+            infos[name]['limitations'] += ' Las variables disponibles no superaron la referencia poblacional. La estimación no discrimina entre clientes; no usarla como ranking individual.'
     result['segmento'] = np.where(result.churn >= .5,'Priorizar retención','Seguimiento')
+    if infos['churn']['algorithm'] == 'Tasa poblacional validada':
+        result['segmento'] = 'Sin ranking individual'
     result = result.rename(columns={'monetary':'gasto_180d','frequency':'pedidos_180d','recency':'dias_sin_compra'})
     rows = records(result.drop(columns=['cutoff','tenure','ticket']).sort_values('clv',ascending=False))
     return {

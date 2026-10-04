@@ -1,5 +1,7 @@
 """One Snowflake extraction per refresh; transactional publication in Postgres."""
 import hashlib
+from io import StringIO
+from decimal import Decimal
 import json
 import os
 import re
@@ -27,6 +29,13 @@ def sync():
             with connection.cursor() as cursor:
                 cursor.execute(f'SELECT * FROM {database}.{schema}.{table}')
                 frame = pd.DataFrame(cursor.fetchall(), columns=[c[0].lower() for c in cursor.description])
+            for column in frame:
+                values = frame[column].dropna()
+                if not values.empty and isinstance(values.iloc[0], Decimal):
+                    frame[column] = pd.to_numeric(frame[column], errors='raise')
+            for column in ('fecha', 'mes_fecha', 'semana'):
+                if column in frame:
+                    frame[column] = pd.to_datetime(frame[column])
             validate(frame, keys)
             frame = frame.sort_values(keys).reset_index(drop=True)
             frames[table] = frame
@@ -39,7 +48,12 @@ def sync():
         connection.execute(text('CREATE SCHEMA IF NOT EXISTS hgc_analytics'))
         connection.execute(text("SELECT pg_advisory_xact_lock(7264301)"))
         for table, frame in frames.items():
-            frame.to_sql(table, connection, schema='hgc_analytics', if_exists='replace', index=False, chunksize=2000)
+            frame.head(0).to_sql(table, connection, schema='hgc_analytics', if_exists='replace', index=False)
+            buffer = StringIO()
+            frame.to_csv(buffer, index=False, header=False, na_rep='\\N')
+            buffer.seek(0)
+            with connection.connection.driver_connection.cursor() as cursor:
+                cursor.copy_expert(f"COPY hgc_analytics.{table} FROM STDIN WITH (FORMAT CSV, NULL '\\N')", buffer)
             keys = ', '.join(MODELS[table][1])
             connection.execute(text(f'ALTER TABLE hgc_analytics.{table} ADD PRIMARY KEY ({keys})'))
         connection.execute(text('''CREATE TABLE IF NOT EXISTS hgc_analytics.loads (

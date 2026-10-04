@@ -134,3 +134,17 @@ ml/logs/
 
 # Cache
 .cache/
+
+# Actual project paths: keep reproducible sources, not runtime artifacts.
+dbt/target/
+dbt/target-system/
+dbt/dbt_packages/
+dbt/logs/
+dbt/logs-system/
+hgc-ml/artifacts/
+hgc-ml/models/
+mlruns/
+.pytest_cache/
+**/.pytest_cache/
+**/.ipynb_checkpoints/
+!**/.env.example

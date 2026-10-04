@@ -24,6 +24,7 @@ app.use("/api/auth", authRoutes);
 
 // Time Series
 app.use("/api/time-series", timeSeriesRoutes);
+app.use("/api/analytics", require("./analytics/analytics.routes"));
 
 // Econometrics (Próximamente)
 // app.use("/api/econometrics", econometricsRoutes);

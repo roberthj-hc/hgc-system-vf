@@ -1,0 +1,8 @@
+/* Scope sizing to analytics screens; the chat layout is unaffected. */
+main[data-slot="sidebar-inset"]:has([data-analytics]) {
+  min-width: 0;
+}
+[data-analytics] {
+  min-width: 0;
+  max-width: 100%;
+}
