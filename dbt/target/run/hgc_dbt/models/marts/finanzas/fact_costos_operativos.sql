@@ -2,18 +2,21 @@
   
     
 
-create or replace transient table HGC_DW.GOLD.fact_costos_operativos
+create or replace transient table HGC_DWH.GOLD.fact_costos_operativos
     
     
     
+    
+    
+
     as (
 
 with costos as (
-    select * from HGC_DW.SILVER.stg_mariadb__costos_operativos
+    select * from HGC_DWH.SILVER.stg_mariadb__costos_operativos
 ),
 dim_cat as (
     select id_categoria_costo_sk, categoria_principal, subcategoria
-    from HGC_DW.GOLD.dim_categoria_costo
+    from HGC_DWH.GOLD.dim_categoria_costo
 )
 select
     year(c.fecha_pago)*10000 + month(c.fecha_pago)*100 + day(c.fecha_pago)   as id_fecha_pago_sk,

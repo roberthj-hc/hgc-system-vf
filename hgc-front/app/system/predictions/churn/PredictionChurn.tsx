@@ -1,9 +1,3 @@
-"use client"
-
-export function PredictionChurn() {
-    return(
-        <>
-        <p>hola mundo, prediction churn</p>
-        </>
-    )
-}
+"use client";
+import { CustomerReport } from "@/components/analytics/customer-report";
+export function PredictionChurn() { return <CustomerReport mode="churn"/>; }

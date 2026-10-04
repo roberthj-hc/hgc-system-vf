@@ -1,5 +1,5 @@
 with source as (
-    select * from HGC_DW.BRONZE_MARIADB.transacciones_pago
+    select * from HGC_DWH.BRONZE_MARIADB.transacciones_pago
 )
 select
     id_pago                               as id_pago_nk,

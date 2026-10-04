@@ -2,14 +2,17 @@
   
     
 
-create or replace transient table HGC_DW.GOLD.dim_tiempo
+create or replace transient table HGC_DWH.GOLD.dim_tiempo
     
     
     
+    
+    
+
     as (
 
 with source as (
-    select * from HGC_DW.SILVER.stg_csv__calendario
+    select * from HGC_DWH.SILVER.stg_csv__calendario
 )
 select
     id_fecha_nk                     as id_fecha_sk,

@@ -2,13 +2,16 @@
   
     
 
-create or replace transient table HGC_DW.GOLD.dim_metodo_pago
+create or replace transient table HGC_DWH.GOLD.dim_metodo_pago
     
     
     
+    
+    
+
     as (
 
-with source as (select * from HGC_DW.SILVER.stg_mariadb__metodos_pago)
+with source as (select * from HGC_DWH.SILVER.stg_mariadb__metodos_pago)
 select
     id_metodo_nk  as id_metodo_sk,
     id_metodo_nk,

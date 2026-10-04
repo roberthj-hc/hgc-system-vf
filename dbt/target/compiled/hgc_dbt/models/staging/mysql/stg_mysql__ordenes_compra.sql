@@ -1,5 +1,5 @@
 with source as (
-    select * from HGC_DW.BRONZE_MYSQL.ordenes_compra
+    select * from HGC_DWH.BRONZE_MYSQL.ordenes_compra
 )
 select
     id_oc                                 as id_oc_nk,

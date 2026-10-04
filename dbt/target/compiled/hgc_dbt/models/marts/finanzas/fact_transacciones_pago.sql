@@ -1,11 +1,11 @@
 
 
 with pagos as (
-    select * from HGC_DW.SILVER.stg_mariadb__transacciones_pago
+    select * from HGC_DWH.SILVER.stg_mariadb__transacciones_pago
 ),
 pedidos as (
     select id_pedido_nk, id_sucursal, id_fecha, fecha_hora
-    from HGC_DW.SILVER.stg_postgresql__pedidos
+    from HGC_DWH.SILVER.stg_postgresql__pedidos
 )
 select
     coalesce(

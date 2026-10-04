@@ -1,7 +1,7 @@
 
 
 WITH diario AS (
-    SELECT * FROM HGC_DW.FEATURES.int_ventas_diarias_sucursal
+    SELECT * FROM HGC_DWH.FEATURES.int_ventas_diarias_sucursal
 ),
 
 semanal_sucursal AS (

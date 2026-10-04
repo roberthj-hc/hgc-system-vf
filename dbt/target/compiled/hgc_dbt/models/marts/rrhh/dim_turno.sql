@@ -1,6 +1,6 @@
 
 
-with source as (select * from HGC_DW.SILVER.stg_sqlserver__turnos)
+with source as (select * from HGC_DWH.SILVER.stg_sqlserver__turnos)
 select
     id_turno_nk   as id_turno_sk,
     id_turno_nk,

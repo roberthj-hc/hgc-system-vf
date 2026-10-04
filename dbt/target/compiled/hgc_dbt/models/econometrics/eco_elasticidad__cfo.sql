@@ -1,7 +1,7 @@
 
 
 WITH ventas AS (
-    SELECT * FROM HGC_DW.ECONOMETRICS.int_ventas_producto_semana
+    SELECT * FROM HGC_DWH.ECONOMETRICS.int_ventas_producto_semana
 ),
 
 calendario_sem AS (
@@ -9,7 +9,7 @@ calendario_sem AS (
         DATE_TRUNC('WEEK', FECHA)                        AS SEMANA,
         MAX(CASE WHEN ES_FERIADO    THEN 1 ELSE 0 END)   AS HAY_FERIADO,
         SUM(CASE WHEN ES_FIN_SEMANA THEN 1 ELSE 0 END)   AS DIAS_FINDE
-    FROM HGC_DW.SILVER.stg_csv__calendario
+    FROM HGC_DWH.SILVER.stg_csv__calendario
     GROUP BY 1
 )
 
@@ -54,9 +54,9 @@ SELECT
         / NULLIF(v.PRECIO_PROM, 0)                       AS MARGEN_PCT
 
 FROM ventas v
-LEFT JOIN HGC_DW.SILVER.stg_postgresql__productos pr
+LEFT JOIN HGC_DWH.SILVER.stg_postgresql__productos pr
        ON pr.ID_PRODUCTO_NK = v.ID_PRODUCTO
-LEFT JOIN HGC_DW.SILVER.stg_csv__sucursales suc
+LEFT JOIN HGC_DWH.SILVER.stg_csv__sucursales suc
        ON suc.ID_SUCURSAL_NK = v.ID_SUCURSAL
 LEFT JOIN calendario_sem c
        ON c.SEMANA = v.SEMANA

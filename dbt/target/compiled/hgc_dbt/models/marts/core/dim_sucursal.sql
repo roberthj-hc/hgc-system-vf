@@ -1,7 +1,7 @@
 
 
 with source as (
-    select * from HGC_DW.SILVER.stg_csv__sucursales
+    select * from HGC_DWH.SILVER.stg_csv__sucursales
 )
 select
     id_sucursal_nk                                       as id_sucursal_sk,

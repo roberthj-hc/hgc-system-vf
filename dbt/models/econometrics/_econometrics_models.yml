@@ -16,7 +16,7 @@ models:
       - name: LN_COSTO
         description: "Logaritmo natural del costo operativo para modelos de elasticidad de costos."
 
-  - name: eco_elasticidad_precio_demanda__cfo
+  - name: eco_elasticidad__cfo
     description: "Datos para estimar la elasticidad precio de la demanda."
     columns:
       - name: SEMANA

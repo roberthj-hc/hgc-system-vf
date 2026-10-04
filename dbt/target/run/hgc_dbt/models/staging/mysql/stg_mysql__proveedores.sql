@@ -1,12 +1,12 @@
 
-  create or replace   view HGC_DW.SILVER.stg_mysql__proveedores
+  create or replace   view HGC_DWH.SILVER.stg_mysql__proveedores
   
   
   
   
   as (
     with source as (
-    select * from HGC_DW.BRONZE_MYSQL.proveedores
+    select * from HGC_DWH.BRONZE_MYSQL.proveedores
 )
 select
     id_proveedor                          as id_proveedor_nk,

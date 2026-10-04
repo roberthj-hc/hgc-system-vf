@@ -1,7 +1,7 @@
 
 
 with snap as (
-    select * from HGC_DW.snapshots.snp_mongodb__clientes
+    select * from HGC_DWH.snapshots.snp_mongodb__clientes
 )
 select
     row_number() over (order by id_cliente_nk, dbt_valid_from)              as id_cliente_sk,

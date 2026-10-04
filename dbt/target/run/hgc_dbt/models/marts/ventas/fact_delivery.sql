@@ -2,22 +2,25 @@
   
     
 
-create or replace transient table HGC_DW.GOLD.fact_delivery
+create or replace transient table HGC_DWH.GOLD.fact_delivery
     
     
     
+    
+    
+
     as (
 
 with delivery as (
-    select * from HGC_DW.SILVER.stg_postgresql__delivery_orden
+    select * from HGC_DWH.SILVER.stg_postgresql__delivery_orden
 ),
 pedidos as (
     select id_pedido_nk, id_fecha, id_cliente, id_sucursal, fecha_hora
-    from HGC_DW.SILVER.stg_postgresql__pedidos
+    from HGC_DWH.SILVER.stg_postgresql__pedidos
 ),
 dim_cliente as (
     select id_cliente_sk, id_cliente_nk
-    from HGC_DW.GOLD.dim_cliente
+    from HGC_DWH.GOLD.dim_cliente
     where es_actual = true
 )
 select

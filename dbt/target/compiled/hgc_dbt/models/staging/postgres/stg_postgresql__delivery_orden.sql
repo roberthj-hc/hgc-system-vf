@@ -1,5 +1,5 @@
 with source as (
-    select * from HGC_DW.BRONZE_POSTGRESQL.delivery_orden
+    select * from HGC_DWH.BRONZE_POSTGRESQL.delivery_orden
 )
 select
     id_delivery                           as id_delivery_nk,

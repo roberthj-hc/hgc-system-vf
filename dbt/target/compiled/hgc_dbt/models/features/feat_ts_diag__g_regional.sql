@@ -1,7 +1,7 @@
 
 
 WITH diario AS (
-    SELECT * FROM HGC_DW.FEATURES.int_ventas_diarias_sucursal
+    SELECT * FROM HGC_DWH.FEATURES.int_ventas_diarias_sucursal
 ),
 
 campanas AS (
@@ -14,7 +14,7 @@ campanas AS (
         DIA_INICIO,
         MES_FIN,
         DIA_FIN
-    FROM HGC_DW.SILVER.STG_MONGODB__CAMPANAS
+    FROM HGC_DWH.SILVER.STG_MONGODB__CAMPANAS
 ),
 
 diario_enriquecido AS (

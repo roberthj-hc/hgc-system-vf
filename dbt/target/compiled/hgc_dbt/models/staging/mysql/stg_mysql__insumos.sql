@@ -1,5 +1,5 @@
 with source as (
-    select * from HGC_DW.BRONZE_MYSQL.insumos
+    select * from HGC_DWH.BRONZE_MYSQL.insumos
 )
 select
     id_insumo                             as id_insumo_nk,

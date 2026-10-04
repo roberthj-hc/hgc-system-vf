@@ -1,12 +1,12 @@
 
-  create or replace   view HGC_DW.SILVER.stg_mongodb__campanas
+  create or replace   view HGC_DWH.SILVER.stg_mongodb__campanas
   
   
   
   
   as (
     with source as (
-    select * from HGC_DW.BRONZE_MONGODB.campanas
+    select * from HGC_DWH.BRONZE_MONGODB.campanas
     where _ab_cdc_deleted_at is null
 )
 select

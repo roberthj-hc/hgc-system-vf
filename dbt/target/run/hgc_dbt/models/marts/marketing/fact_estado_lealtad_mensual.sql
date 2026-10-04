@@ -2,18 +2,21 @@
   
     
 
-create or replace transient table HGC_DW.GOLD.fact_estado_lealtad_mensual
+create or replace transient table HGC_DWH.GOLD.fact_estado_lealtad_mensual
     
     
     
+    
+    
+
     as (
 
 with lealtad as (
-    select * from HGC_DW.SILVER.stg_mongodb__programa_lealtad
+    select * from HGC_DWH.SILVER.stg_mongodb__programa_lealtad
 ),
 dim_cliente as (
     select id_cliente_sk, id_cliente_nk
-    from HGC_DW.GOLD.dim_cliente
+    from HGC_DWH.GOLD.dim_cliente
     where es_actual = true
 ),
 base as (

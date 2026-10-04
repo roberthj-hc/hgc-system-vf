@@ -2,7 +2,7 @@ version: 2
 
 sources:
   - name: silver
-    database: HGC_DW
+    database: HGC_DWH
     schema: SILVER
     tables:
       - name: STG_POSTGRESQL__PEDIDOS
@@ -15,27 +15,10 @@ sources:
 
 models:
   - name: int_ventas_diarias_sucursal
-    description: "Ventas diarias agregadas por sucursal y canal, enriquecidas con calendario"
+    description: "Ventas diarias agregadas por sucursal y canal, enriquecidas con calendario."
 
-  - name: int_producto_dia
-    description: "Granularidad diaria por producto y sucursal. Incluye métricas de precio efectivo, descuentos y flags de calendario. Base para modelos de elasticidad."
-    columns:
-      - name: FECHA
-        tests:
-          - not_null
-      - name: ID_PRODUCTO
-        tests:
-          - not_null
-      - name: ID_SUCURSAL
-        tests:
-          - not_null
+  - name: int_costos_ingresos_mes
+    description: "Agregación mensual de costos e ingresos utilizada como base para análisis financieros."
 
-  - name: int_sucursal_mes
-    description: "Vista consolidada mensual por sucursal. Atribuye costos fijos, variables y prorrateo de marketing. Es el motor de los modelos de eficiencia (Cobb-Douglas)."
-    columns:
-      - name: MES_FECHA
-        tests:
-          - not_null
-      - name: ID_SUCURSAL
-        tests:
-          - not_null
+  - name: int_ventas_producto_semana
+    description: "Ventas semanales agregadas por producto y sucursal."

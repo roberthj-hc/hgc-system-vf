@@ -1,5 +1,5 @@
 with source as (
-    select * from HGC_DW.BRONZE_MONGODB.cupones_redimidos
+    select * from HGC_DWH.BRONZE_MONGODB.cupones_redimidos
     where _ab_cdc_deleted_at is null
 )
 select

@@ -2,13 +2,16 @@
   
     
 
-create or replace transient table HGC_DW.GOLD.dim_insumo
+create or replace transient table HGC_DWH.GOLD.dim_insumo
     
     
     
+    
+    
+
     as (
 
-with source as (select * from HGC_DW.SILVER.stg_mysql__insumos)
+with source as (select * from HGC_DWH.SILVER.stg_mysql__insumos)
 select
     id_insumo_nk                       as id_insumo_sk,
     id_insumo_nk,

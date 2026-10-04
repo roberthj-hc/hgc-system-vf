@@ -1,5 +1,5 @@
 with source as (
-    select * from HGC_DW.BRONZE_SQLSERVER.turnos
+    select * from HGC_DWH.BRONZE_SQLSERVER.turnos
 )
 select
     id_turno                              as id_turno_nk,

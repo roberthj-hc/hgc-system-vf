@@ -1,12 +1,12 @@
 
-  create or replace   view HGC_DW.SILVER.stg_mongodb__cupones_redimidos
+  create or replace   view HGC_DWH.SILVER.stg_mongodb__cupones_redimidos
   
   
   
   
   as (
     with source as (
-    select * from HGC_DW.BRONZE_MONGODB.cupones_redimidos
+    select * from HGC_DWH.BRONZE_MONGODB.cupones_redimidos
     where _ab_cdc_deleted_at is null
 )
 select

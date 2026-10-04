@@ -1,0 +1,25 @@
+services:
+  pipeline:
+    build:
+      context: .
+      dockerfile: hgc-ml/Dockerfile
+    env_file:
+      - hgc-back/.env
+      - dbt/.env
+    environment:
+      POSTGRES_HOST: host.docker.internal
+      MLFLOW_TRACKING_URI: sqlite:////workspace/hgc-ml/artifacts/mlflow.db
+    volumes:
+      - .:/workspace
+    extra_hosts:
+      - host.docker.internal:host-gateway
+  mlflow:
+    build:
+      context: .
+      dockerfile: hgc-ml/Dockerfile
+    command: ["mlflow", "server", "--host", "0.0.0.0", "--port", "5000", "--backend-store-uri", "sqlite:////workspace/hgc-ml/artifacts/mlflow.db", "--default-artifact-root", "/workspace/hgc-ml/artifacts/mlruns"]
+    volumes:
+      - ./hgc-ml:/workspace/hgc-ml
+    ports:
+      - "127.0.0.1:5000:5000"
+    restart: unless-stopped

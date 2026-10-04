@@ -2,20 +2,23 @@
   
     
 
-create or replace transient table HGC_DW.FEATURES.feat_ts_pred__g_regional
+create or replace transient table HGC_DWH.FEATURES.feat_ts_pred__g_regional
     
     
     
+    
+    
+
     as (
 
 WITH diario AS (
-    SELECT * FROM HGC_DW.FEATURES.int_ventas_diarias_sucursal
+    SELECT * FROM HGC_DWH.FEATURES.int_ventas_diarias_sucursal
 ),
 
 campanas AS (
     SELECT
         MES_INICIO, DIA_INICIO, MES_FIN, DIA_FIN, NOMBRE AS nombre_campana
-    FROM HGC_DW.SILVER.STG_MONGODB__CAMPANAS
+    FROM HGC_DWH.SILVER.STG_MONGODB__CAMPANAS
 ),
 
 costos AS (
@@ -23,7 +26,7 @@ costos AS (
         ID_SUCURSAL,
         DATE_TRUNC('MONTH', FECHA_PAGO)::DATE AS mes_costo,
         SUM(MONTO) AS costo_operativo_mensual
-    FROM HGC_DW.SILVER.STG_MARIADB__COSTOS_OPERATIVOS
+    FROM HGC_DWH.SILVER.STG_MARIADB__COSTOS_OPERATIVOS
     GROUP BY ID_SUCURSAL, DATE_TRUNC('MONTH', FECHA_PAGO)::DATE
 ),
 

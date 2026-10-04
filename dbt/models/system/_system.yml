@@ -1,0 +1,37 @@
+version: 2
+models:
+  - name: sys_sales_daily
+    description: Daily branch sales serving contract; completed orders only.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [ID_SUCURSAL, FECHA]
+    columns:
+      - name: FECHA
+        data_tests: [not_null]
+      - name: ID_SUCURSAL
+        data_tests: [not_null]
+      - name: INGRESOS
+        data_tests: [not_null]
+  - name: sys_customer_orders
+    description: Identified completed orders for point-in-time customer features.
+    columns:
+      - name: ID_PEDIDO
+        data_tests: [unique, not_null]
+      - name: ID_CLIENTE
+        data_tests: [not_null]
+      - name: FECHA
+        data_tests: [not_null]
+  - name: sys_branch_monthly
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [ID_SUCURSAL, MES_FECHA]
+    columns:
+      - name: COSTO_OP_TOTAL
+        data_tests: [not_null]
+  - name: sys_product_weekly
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [ID_SUCURSAL, ID_PRODUCTO, SEMANA]
+    columns:
+      - name: COSTO_ESTANDAR
+        data_tests: [not_null]

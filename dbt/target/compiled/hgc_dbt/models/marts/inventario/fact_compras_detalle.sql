@@ -1,10 +1,10 @@
 
 
 with oc as (
-    select * from HGC_DW.SILVER.stg_mysql__ordenes_compra
+    select * from HGC_DWH.SILVER.stg_mysql__ordenes_compra
 ),
 detalle_oc as (
-    select * from HGC_DW.SILVER.stg_mysql__detalle_oc
+    select * from HGC_DWH.SILVER.stg_mysql__detalle_oc
 )
 select
     year(o.fecha_pedido)*10000 + month(o.fecha_pedido)*100 + day(o.fecha_pedido)            as id_fecha_pedido_sk,

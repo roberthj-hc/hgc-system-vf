@@ -2,31 +2,34 @@
   
     
 
-create or replace transient table HGC_DW.GOLD.fact_ventas_detalle
+create or replace transient table HGC_DWH.GOLD.fact_ventas_detalle
     
     
     
+    
+    
+
     as (
 
 with pedidos as (
-    select * from HGC_DW.SILVER.stg_postgresql__pedidos
+    select * from HGC_DWH.SILVER.stg_postgresql__pedidos
 ),
 detalle as (
-    select * from HGC_DW.SILVER.stg_postgresql__detalle_pedido
+    select * from HGC_DWH.SILVER.stg_postgresql__detalle_pedido
 ),
 dim_producto as (
     select id_producto_sk, id_producto_nk
-    from HGC_DW.GOLD.dim_producto
+    from HGC_DWH.GOLD.dim_producto
     where es_actual = true
 ),
 dim_cliente as (
     select id_cliente_sk, id_cliente_nk
-    from HGC_DW.GOLD.dim_cliente
+    from HGC_DWH.GOLD.dim_cliente
     where es_actual = true
 ),
 dim_empleado as (
     select id_empleado_sk, id_empleado_nk
-    from HGC_DW.GOLD.dim_empleado
+    from HGC_DWH.GOLD.dim_empleado
     where es_actual = true
 )
 select

@@ -2,17 +2,20 @@
   
     
 
-create or replace transient table HGC_DW.GOLD.dim_producto
+create or replace transient table HGC_DWH.GOLD.dim_producto
     
     
     
+    
+    
+
     as (
 
 with snap as (
-    select * from HGC_DW.snapshots.snp_postgresql__productos
+    select * from HGC_DWH.snapshots.snp_postgresql__productos
 ),
 categorias as (
-    select id_categoria_nk, nombre from HGC_DW.SILVER.stg_postgresql__categoria_producto
+    select id_categoria_nk, nombre from HGC_DWH.SILVER.stg_postgresql__categoria_producto
 )
 select
     row_number() over (order by s.id_producto_nk, s.dbt_valid_from)         as id_producto_sk,

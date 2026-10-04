@@ -21,6 +21,7 @@ pedidos AS (
         ID_CANAL,
         FECHA_HORA::DATE AS FECHA
     FROM {{ ref('stg_postgresql__pedidos') }}
+    WHERE ID_ESTADO = 1
 ),
 
 base AS (

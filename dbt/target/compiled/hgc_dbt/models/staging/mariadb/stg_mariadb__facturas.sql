@@ -1,5 +1,5 @@
 with source as (
-    select * from HGC_DW.BRONZE_MARIADB.facturas
+    select * from HGC_DWH.BRONZE_MARIADB.facturas
 )
 select
     id_factura                            as id_factura_nk,

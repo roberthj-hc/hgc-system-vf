@@ -2,10 +2,13 @@
   
     
 
-create or replace transient table HGC_DW.ECONOMETRICS.int_costos_ingresos_mes
+create or replace transient table HGC_DWH.ECONOMETRICS.int_costos_ingresos_mes
     
     
     
+    
+    
+
     as (
 
 WITH ventas_mes AS (
@@ -16,7 +19,7 @@ WITH ventas_mes AS (
         SUM(TOTAL_NETO)                                  AS INGRESOS_NETOS,
         SUM(TOTAL_DESCUENTO)                             AS DESCUENTOS_TOTAL,
         AVG(TOTAL_NETO)                                  AS TICKET_PROMEDIO
-    FROM HGC_DW.SILVER.stg_postgresql__pedidos
+    FROM HGC_DWH.SILVER.stg_postgresql__pedidos
     GROUP BY 1, 2
 ),
 
@@ -26,8 +29,8 @@ unidades_mes AS (
         p.ID_SUCURSAL,
         SUM(d.CANTIDAD)                                  AS UNIDADES_VENDIDAS,
         COUNT(DISTINCT d.ID_PRODUCTO)                    AS SKU_ACTIVOS
-    FROM HGC_DW.SILVER.stg_postgresql__pedidos p
-    INNER JOIN HGC_DW.SILVER.stg_postgresql__detalle_pedido d
+    FROM HGC_DWH.SILVER.stg_postgresql__pedidos p
+    INNER JOIN HGC_DWH.SILVER.stg_postgresql__detalle_pedido d
             ON d.ID_PEDIDO = p.ID_PEDIDO_NK
     GROUP BY 1, 2
 ),
@@ -40,7 +43,7 @@ costos_mes AS (
         SUM(CASE WHEN CATEGORIA = 'Fijo'     THEN MONTO ELSE 0 END) AS COSTO_FIJO,
         SUM(CASE WHEN CATEGORIA = 'Variable' THEN MONTO ELSE 0 END) AS COSTO_VARIABLE,
         COUNT(DISTINCT SUBCATEGORIA)                     AS N_SUBCATEGORIAS
-    FROM HGC_DW.SILVER.stg_mariadb__costos_operativos
+    FROM HGC_DWH.SILVER.stg_mariadb__costos_operativos
     GROUP BY 1, 2
 )
 

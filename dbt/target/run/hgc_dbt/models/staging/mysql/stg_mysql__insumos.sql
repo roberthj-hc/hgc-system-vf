@@ -1,12 +1,12 @@
 
-  create or replace   view HGC_DW.SILVER.stg_mysql__insumos
+  create or replace   view HGC_DWH.SILVER.stg_mysql__insumos
   
   
   
   
   as (
     with source as (
-    select * from HGC_DW.BRONZE_MYSQL.insumos
+    select * from HGC_DWH.BRONZE_MYSQL.insumos
 )
 select
     id_insumo                             as id_insumo_nk,

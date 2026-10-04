@@ -1,18 +1,18 @@
 
 
 with redimidos as (
-    select * from HGC_DW.SILVER.stg_mongodb__cupones_redimidos
+    select * from HGC_DWH.SILVER.stg_mongodb__cupones_redimidos
 ),
 pedidos as (
     select id_pedido_nk, id_fecha, id_cliente, id_sucursal, total_neto
-    from HGC_DW.SILVER.stg_postgresql__pedidos
+    from HGC_DWH.SILVER.stg_postgresql__pedidos
 ),
 dim_cupon as (
-    select id_cupon_sk, id_cupon_nk from HGC_DW.GOLD.dim_cupon
+    select id_cupon_sk, id_cupon_nk from HGC_DWH.GOLD.dim_cupon
 ),
 dim_cliente as (
     select id_cliente_sk, id_cliente_nk
-    from HGC_DW.GOLD.dim_cliente
+    from HGC_DWH.GOLD.dim_cliente
     where es_actual = true
 )
 select

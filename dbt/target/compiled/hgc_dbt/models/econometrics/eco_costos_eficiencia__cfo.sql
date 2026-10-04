@@ -1,7 +1,7 @@
 
 
 WITH base AS (
-    SELECT * FROM HGC_DW.ECONOMETRICS.int_costos_ingresos_mes
+    SELECT * FROM HGC_DWH.ECONOMETRICS.int_costos_ingresos_mes
 )
 
 SELECT
@@ -45,7 +45,7 @@ SELECT
     CASE WHEN suc.CIUDAD ILIKE '%Cochabamba%' THEN 1 ELSE 0 END AS DUMMY_CBBA
 
 FROM base b
-LEFT JOIN HGC_DW.SILVER.stg_csv__sucursales suc
+LEFT JOIN HGC_DWH.SILVER.stg_csv__sucursales suc
        ON suc.ID_SUCURSAL_NK = b.ID_SUCURSAL
 WHERE b.INGRESOS_NETOS > 0
   AND b.COSTO_OP_TOTAL > 0

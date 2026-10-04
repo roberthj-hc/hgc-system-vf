@@ -1,10 +1,10 @@
 
 
 with almacenes as (
-    select * from HGC_DW.SILVER.stg_mysql__almacenes
+    select * from HGC_DWH.SILVER.stg_mysql__almacenes
 ),
 sucursales as (
-    select id_sucursal_sk, nombre_sucursal from HGC_DW.GOLD.dim_sucursal
+    select id_sucursal_sk, nombre_sucursal from HGC_DWH.GOLD.dim_sucursal
 )
 select
     a.id_almacen_nk                                      as id_almacen_sk,

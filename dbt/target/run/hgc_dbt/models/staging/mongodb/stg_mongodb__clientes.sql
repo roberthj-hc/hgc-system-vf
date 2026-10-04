@@ -1,12 +1,12 @@
 
-  create or replace   view HGC_DW.SILVER.stg_mongodb__clientes
+  create or replace   view HGC_DWH.SILVER.stg_mongodb__clientes
   
   
   
   
   as (
     with source as (
-    select * from HGC_DW.BRONZE_MONGODB.clientes
+    select * from HGC_DWH.BRONZE_MONGODB.clientes
     where _ab_cdc_deleted_at is null
 )
 select

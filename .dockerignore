@@ -1,0 +1,9 @@
+.git
+venv
+.venv
+**/node_modules
+**/.next
+**/.env
+**/target
+**/dbt_packages
+**/artifacts

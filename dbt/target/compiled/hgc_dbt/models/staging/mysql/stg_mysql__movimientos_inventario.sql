@@ -1,5 +1,5 @@
 with source as (
-    select * from HGC_DW.BRONZE_MYSQL.movimientos_inventario
+    select * from HGC_DWH.BRONZE_MYSQL.movimientos_inventario
 )
 select
     id_mov                                as id_mov_nk,

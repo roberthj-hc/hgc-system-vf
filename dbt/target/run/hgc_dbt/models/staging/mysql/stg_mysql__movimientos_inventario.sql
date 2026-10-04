@@ -1,12 +1,12 @@
 
-  create or replace   view HGC_DW.SILVER.stg_mysql__movimientos_inventario
+  create or replace   view HGC_DWH.SILVER.stg_mysql__movimientos_inventario
   
   
   
   
   as (
     with source as (
-    select * from HGC_DW.BRONZE_MYSQL.movimientos_inventario
+    select * from HGC_DWH.BRONZE_MYSQL.movimientos_inventario
 )
 select
     id_mov                                as id_mov_nk,

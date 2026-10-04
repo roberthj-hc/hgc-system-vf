@@ -2,10 +2,13 @@
   
     
 
-create or replace transient table HGC_DW.GOLD.dim_hora
+create or replace transient table HGC_DWH.GOLD.dim_hora
     
     
     
+    
+    
+
     as (
 
 with minutos as (

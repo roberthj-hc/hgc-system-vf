@@ -1,0 +1,1 @@
+"""Validated, atomic serving snapshots."""

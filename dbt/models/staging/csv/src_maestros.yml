@@ -2,7 +2,7 @@ version: 2
 
 sources:
   - name: bronze_csv_excel
-    database: HGC_DW
+    database: HGC_DWH
     schema: BRONZE_CSV_EXCEL
     description: "Tablas maestras estáticas cargadas manualmente"
     tables:

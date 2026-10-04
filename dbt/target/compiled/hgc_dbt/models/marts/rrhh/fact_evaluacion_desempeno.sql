@@ -1,11 +1,11 @@
 
 
 with eval as (
-    select * from HGC_DW.SILVER.stg_sqlserver__evaluaciones_desempeno
+    select * from HGC_DWH.SILVER.stg_sqlserver__evaluaciones_desempeno
 ),
 dim_empleado as (
     select id_empleado_sk, id_empleado_nk
-    from HGC_DW.GOLD.dim_empleado
+    from HGC_DWH.GOLD.dim_empleado
     where es_actual = true
 )
 select

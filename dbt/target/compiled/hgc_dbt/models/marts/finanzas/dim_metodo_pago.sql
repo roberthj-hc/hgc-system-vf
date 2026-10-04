@@ -1,6 +1,6 @@
 
 
-with source as (select * from HGC_DW.SILVER.stg_mariadb__metodos_pago)
+with source as (select * from HGC_DWH.SILVER.stg_mariadb__metodos_pago)
 select
     id_metodo_nk  as id_metodo_sk,
     id_metodo_nk,

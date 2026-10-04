@@ -8,7 +8,7 @@ WITH detalle AS (
         PRECIO_UNITARIO,
         DESCUENTO,
         SUBTOTAL
-    FROM HGC_DW.SILVER.stg_postgresql__detalle_pedido
+    FROM HGC_DWH.SILVER.stg_postgresql__detalle_pedido
 ),
 
 pedidos AS (
@@ -17,7 +17,7 @@ pedidos AS (
         ID_SUCURSAL,
         ID_CANAL,
         FECHA_HORA::DATE AS FECHA
-    FROM HGC_DW.SILVER.stg_postgresql__pedidos
+    FROM HGC_DWH.SILVER.stg_postgresql__pedidos
 ),
 
 base AS (

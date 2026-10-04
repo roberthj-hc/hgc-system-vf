@@ -12,6 +12,7 @@ WITH ventas_mes AS (
         SUM(TOTAL_DESCUENTO)                             AS DESCUENTOS_TOTAL,
         AVG(TOTAL_NETO)                                  AS TICKET_PROMEDIO
     FROM {{ ref('stg_postgresql__pedidos') }}
+    WHERE ID_ESTADO = 1
     GROUP BY 1, 2
 ),
 
@@ -24,6 +25,7 @@ unidades_mes AS (
     FROM {{ ref('stg_postgresql__pedidos') }} p
     INNER JOIN {{ ref('stg_postgresql__detalle_pedido') }} d
             ON d.ID_PEDIDO = p.ID_PEDIDO_NK
+    WHERE p.ID_ESTADO = 1
     GROUP BY 1, 2
 ),
 

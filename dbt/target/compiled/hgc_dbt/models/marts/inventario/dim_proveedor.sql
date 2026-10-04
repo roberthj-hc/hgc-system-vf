@@ -1,6 +1,6 @@
 
 
-with source as (select * from HGC_DW.SILVER.stg_mysql__proveedores)
+with source as (select * from HGC_DWH.SILVER.stg_mysql__proveedores)
 select
     id_proveedor_nk  as id_proveedor_sk,
     id_proveedor_nk,

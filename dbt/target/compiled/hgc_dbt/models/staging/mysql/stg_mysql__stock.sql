@@ -1,5 +1,5 @@
 with source as (
-    select * from HGC_DW.BRONZE_MYSQL.stock
+    select * from HGC_DWH.BRONZE_MYSQL.stock
 )
 select
     id_stock                              as id_stock_nk,

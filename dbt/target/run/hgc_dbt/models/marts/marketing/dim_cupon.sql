@@ -2,17 +2,20 @@
   
     
 
-create or replace transient table HGC_DW.GOLD.dim_cupon
+create or replace transient table HGC_DWH.GOLD.dim_cupon
     
     
     
+    
+    
+
     as (
 
 with cupones as (
-    select * from HGC_DW.SILVER.stg_mongodb__cupones
+    select * from HGC_DWH.SILVER.stg_mongodb__cupones
 ),
 campanas as (
-    select * from HGC_DW.SILVER.stg_mongodb__campanas
+    select * from HGC_DWH.SILVER.stg_mongodb__campanas
 )
 select
     row_number() over (order by c.id_cupon_nk)       as id_cupon_sk,

@@ -2,7 +2,7 @@ version: 2
 
 sources:
   - name: bronze_mongodb
-    database: HGC_DW
+    database: HGC_DWH
     schema: BRONZE_MONGODB
     description: "Comportamiento de clientes, cupones y programa de lealtad"
     tables:

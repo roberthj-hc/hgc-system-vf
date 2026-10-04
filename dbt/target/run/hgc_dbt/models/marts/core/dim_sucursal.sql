@@ -2,14 +2,17 @@
   
     
 
-create or replace transient table HGC_DW.GOLD.dim_sucursal
+create or replace transient table HGC_DWH.GOLD.dim_sucursal
     
     
     
+    
+    
+
     as (
 
 with source as (
-    select * from HGC_DW.SILVER.stg_csv__sucursales
+    select * from HGC_DWH.SILVER.stg_csv__sucursales
 )
 select
     id_sucursal_nk                                       as id_sucursal_sk,

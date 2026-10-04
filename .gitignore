@@ -3,9 +3,9 @@
 # =========================
 
 # ENV Files
-.env
-.env.*
-!.env.example
+#.env
+#.env.*
+#!.env.example
 
 # OS
 .DS_Store
@@ -43,7 +43,7 @@ hgc-front/out/
 hgc-front/build/
 
 # Next.js env
-hgc-front/.env*.local
+#hgc-front/.env*.local
 
 # TypeScript
 hgc-front/*.tsbuildinfo
@@ -63,9 +63,9 @@ hgc-front/.yarn/
 hgc-back/node_modules/
 
 # Env files (MUY IMPORTANTE en backend)
-hgc-back/.env
-hgc-back/.env.*
-!hgc-back/.env.example
+#hgc-back/.env
+#hgc-back/.env.*
+#!hgc-back/.env.example
 
 # Logs backend
 hgc-back/*.log
@@ -129,8 +129,8 @@ ml/logs/
 # =========================
 
 # dotenv (subcarpetas)
-**/.env
-**/.env.*
+#**/.env
+#**/.env.*
 
 # Cache
 .cache/

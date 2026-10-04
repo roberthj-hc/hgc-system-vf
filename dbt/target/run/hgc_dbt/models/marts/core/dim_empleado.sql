@@ -2,20 +2,23 @@
   
     
 
-create or replace transient table HGC_DW.GOLD.dim_empleado
+create or replace transient table HGC_DWH.GOLD.dim_empleado
     
     
     
+    
+    
+
     as (
 
 with snap as (
-    select * from HGC_DW.snapshots.snp_sqlserver__empleados
+    select * from HGC_DWH.snapshots.snp_sqlserver__empleados
 ),
 cargos as (
-    select id_cargo_nk, nombre, id_departamento from HGC_DW.SILVER.stg_sqlserver__cargos
+    select id_cargo_nk, nombre, id_departamento from HGC_DWH.SILVER.stg_sqlserver__cargos
 ),
 departamentos as (
-    select id_departamento_nk, nombre from HGC_DW.SILVER.stg_sqlserver__departamentos
+    select id_departamento_nk, nombre from HGC_DWH.SILVER.stg_sqlserver__departamentos
 )
 select
     row_number() over (order by s.id_empleado_nk, s.dbt_valid_from)         as id_empleado_sk,

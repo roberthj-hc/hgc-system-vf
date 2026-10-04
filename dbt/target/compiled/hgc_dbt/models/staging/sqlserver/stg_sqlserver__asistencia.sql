@@ -1,5 +1,5 @@
 with source as (
-    select * from HGC_DW.BRONZE_SQLSERVER.asistencia
+    select * from HGC_DWH.BRONZE_SQLSERVER.asistencia
 )
 select
     id_asistencia                         as id_asistencia_nk,

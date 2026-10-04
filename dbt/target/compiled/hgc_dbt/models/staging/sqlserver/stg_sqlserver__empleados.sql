@@ -1,5 +1,5 @@
 with source as (
-    select * from HGC_DW.BRONZE_SQLSERVER.empleados
+    select * from HGC_DWH.BRONZE_SQLSERVER.empleados
 )
 select
     id_empleado                           as id_empleado_nk,

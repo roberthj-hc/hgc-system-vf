@@ -1,7 +1,7 @@
 
 
 with tipos as (
-    select distinct tipo_mov from HGC_DW.SILVER.stg_mysql__movimientos_inventario
+    select distinct tipo_mov from HGC_DWH.SILVER.stg_mysql__movimientos_inventario
 )
 select
     row_number() over (order by tipo_mov)  as id_tipo_mov_sk,

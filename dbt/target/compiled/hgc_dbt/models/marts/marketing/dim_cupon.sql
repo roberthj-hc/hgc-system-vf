@@ -1,10 +1,10 @@
 
 
 with cupones as (
-    select * from HGC_DW.SILVER.stg_mongodb__cupones
+    select * from HGC_DWH.SILVER.stg_mongodb__cupones
 ),
 campanas as (
-    select * from HGC_DW.SILVER.stg_mongodb__campanas
+    select * from HGC_DWH.SILVER.stg_mongodb__campanas
 )
 select
     row_number() over (order by c.id_cupon_nk)       as id_cupon_sk,

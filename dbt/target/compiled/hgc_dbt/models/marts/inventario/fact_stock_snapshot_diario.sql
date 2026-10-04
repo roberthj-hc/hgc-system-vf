@@ -1,10 +1,10 @@
 
 
 with stock as (
-    select * from HGC_DW.SILVER.stg_mysql__stock
+    select * from HGC_DWH.SILVER.stg_mysql__stock
 ),
 insumos as (
-    select id_insumo_nk, costo_unitario_historico from HGC_DW.GOLD.dim_insumo
+    select id_insumo_nk, costo_unitario_historico from HGC_DWH.GOLD.dim_insumo
 )
 select
     year(s.ultima_actualizacion)*10000

@@ -1,12 +1,12 @@
 
-  create or replace   view HGC_DW.SILVER.stg_sqlserver__evaluaciones_desempeno
+  create or replace   view HGC_DWH.SILVER.stg_sqlserver__evaluaciones_desempeno
   
   
   
   
   as (
     with source as (
-    select * from HGC_DW.BRONZE_SQLSERVER.evaluaciones_desempeno
+    select * from HGC_DWH.BRONZE_SQLSERVER.evaluaciones_desempeno
 )
 select
     id_eval                               as id_eval_nk,

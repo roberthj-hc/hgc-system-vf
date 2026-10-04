@@ -1,19 +1,19 @@
 
 
 with asistencia as (
-    select * from HGC_DW.SILVER.stg_sqlserver__asistencia
+    select * from HGC_DWH.SILVER.stg_sqlserver__asistencia
 ),
 asignaciones as (
     select id_empleado, id_fecha, id_turno, estado
-    from HGC_DW.SILVER.stg_sqlserver__asignacion_turnos
+    from HGC_DWH.SILVER.stg_sqlserver__asignacion_turnos
 ),
 turnos as (
     select id_turno_nk, hora_inicio_estandar, hora_fin_estandar
-    from HGC_DW.GOLD.dim_turno
+    from HGC_DWH.GOLD.dim_turno
 ),
 dim_empleado as (
     select id_empleado_sk, id_empleado_nk
-    from HGC_DW.GOLD.dim_empleado
+    from HGC_DWH.GOLD.dim_empleado
     where es_actual = true
 )
 select

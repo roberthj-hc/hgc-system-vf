@@ -1,12 +1,12 @@
 
-  create or replace   view HGC_DW.SILVER.stg_mysql__stock
+  create or replace   view HGC_DWH.SILVER.stg_mysql__stock
   
   
   
   
   as (
     with source as (
-    select * from HGC_DW.BRONZE_MYSQL.stock
+    select * from HGC_DWH.BRONZE_MYSQL.stock
 )
 select
     id_stock                              as id_stock_nk,

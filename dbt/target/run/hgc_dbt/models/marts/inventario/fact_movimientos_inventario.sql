@@ -2,17 +2,20 @@
   
     
 
-create or replace transient table HGC_DW.GOLD.fact_movimientos_inventario
+create or replace transient table HGC_DWH.GOLD.fact_movimientos_inventario
     
     
     
+    
+    
+
     as (
 
 with mov as (
-    select * from HGC_DW.SILVER.stg_mysql__movimientos_inventario
+    select * from HGC_DWH.SILVER.stg_mysql__movimientos_inventario
 ),
 dim_tipo as (
-    select id_tipo_mov_sk, codigo_tipo_mov_nk from HGC_DW.GOLD.dim_tipo_movimiento
+    select id_tipo_mov_sk, codigo_tipo_mov_nk from HGC_DWH.GOLD.dim_tipo_movimiento
 )
 select
     year(m.fecha_hora)*10000 + month(m.fecha_hora)*100 + day(m.fecha_hora)   as id_fecha_sk,
