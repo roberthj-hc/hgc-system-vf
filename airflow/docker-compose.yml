@@ -4,9 +4,14 @@ x-airflow-common: &airflow-common
     dockerfile: airflow/Dockerfile
   image: hgc-airflow:2.9.3
   env_file:
+    - .env
+    - ../dbt/.env
     - ../hgc-back/.env
   environment: &airflow-environment
+    AIRFLOW__WEBSERVER__WORKERS: "1"
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__CORE__PARALLELISM: "2"
+    AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG: "1"
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
     AIRFLOW__CORE__LOAD_EXAMPLES: "false"
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
@@ -20,6 +25,7 @@ x-airflow-common: &airflow-common
     - ./dags:/opt/airflow/dags:ro
     - ./logs:/opt/airflow/logs
     - ../hgc-ml:/workspace/hgc-ml
+    - ../dbt:/workspace/dbt
   extra_hosts:
     - host.docker.internal:host-gateway
   user: "${AIRFLOW_UID:-50000}:0"

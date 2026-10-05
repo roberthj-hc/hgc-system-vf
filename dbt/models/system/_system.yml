@@ -38,3 +38,16 @@ models:
     columns:
       - name: COSTO_ESTANDAR
         data_tests: [not_null]
+  - name: sys_customer_features
+    description: Point-in-time customer OBT with MongoDB registration, 180-day features and mature 90-day labels. No contact PII.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [ID_CLIENTE, CUTOFF]
+    columns:
+      - name: ID_CLIENTE
+        data_tests: [not_null]
+      - name: CUTOFF
+        data_tests: [not_null]
+      - name: FREQUENCY
+        data_tests: [not_null]
