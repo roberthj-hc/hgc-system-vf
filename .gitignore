@@ -148,3 +148,10 @@ mlruns/
 **/.pytest_cache/
 **/.ipynb_checkpoints/
 !**/.env.example
+
+# Local credentials are never versioned.
+**/.env
+**/.env.*
+!**/.env.example
+
+.ruff_cache/
